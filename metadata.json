@@ -1,0 +1,6 @@
+{
+  "name": "My Finance",
+  "description": "Advanced Personal Finance & Office Expense Management System with separate office fund ledger, budget tracking, loans, recurring transactions, and BDT financial reporting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
