@@ -14,9 +14,9 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
   const [appName, setAppName] = useState(userSettings.appName || 'My Finance');
   const [userName, setUserName] = useState(userSettings.userName || 'Sabbir Ahmed');
   const [userEmail, setUserEmail] = useState(userSettings.userEmail || 'sabbir@myfinance.bd');
-  const [monthlySalary, setMonthlySalary] = useState(String(userSettings.monthlySalary || 120000));
+  const [monthlySalary, setMonthlySalary] = useState(String(userSettings.monthlySalary || 0));
   const [salaryPayDay, setSalaryPayDay] = useState(String(userSettings.salaryPayDay || 1));
-  const [salaryEmployer, setSalaryEmployer] = useState(userSettings.salaryEmployer || 'TechCorp Bangladesh Ltd.');
+  const [salaryEmployer, setSalaryEmployer] = useState(userSettings.salaryEmployer || '');
   const [dateFormat, setDateFormat] = useState(userSettings.dateFormat || 'DD MMM YYYY');
   const [timezone, setTimezone] = useState(userSettings.timezone || 'Asia/Dhaka');
   const [savedMsg, setSavedMsg] = useState(false);
@@ -48,7 +48,7 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
             <span>Settings & Application Configuration</span>
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Configure profile, salary defaults, currency, date formatting, and regional parameters
+            Configure profile, salary defaults, currency, password security, and regional parameters
           </p>
         </div>
       </div>
@@ -68,13 +68,13 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Application Name</label>
+              <label className="block font-semibold text-slate-700 mb-1">Application Title</label>
               <input
                 type="text"
                 required
                 value={appName}
                 onChange={(e) => setAppName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
               />
             </div>
 
@@ -85,7 +85,7 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
                 required
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
               />
             </div>
 
@@ -96,7 +96,7 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
                 required
                 value={userEmail}
                 onChange={(e) => setUserEmail(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
               />
             </div>
           </div>
@@ -105,7 +105,7 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
         {/* Section 2: Salary Configuration */}
         <div className="space-y-4 pt-2">
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">
-            2. Salary Profile Defaults
+            3. Salary Profile Defaults
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
@@ -115,18 +115,19 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
                 type="text"
                 value={salaryEmployer}
                 onChange={(e) => setSalaryEmployer(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                placeholder="e.g. Company Name"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Configured Monthly Salary (BDT / ৳)</label>
+              <label className="block font-semibold text-slate-700 mb-1">Configured Monthly Salary (BDT)</label>
               <input
                 type="number"
                 step="0.01"
                 value={monthlySalary}
                 onChange={(e) => setMonthlySalary(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-mono font-bold"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-sans font-bold text-xs"
               />
             </div>
 
@@ -138,16 +139,16 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
                 max="31"
                 value={salaryPayDay}
                 onChange={(e) => setSalaryPayDay(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-mono"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-sans text-xs"
               />
             </div>
           </div>
         </div>
 
-        {/* Section 3: Localization */}
+        {/* Section 4: Localization */}
         <div className="space-y-4 pt-2">
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">
-            3. Localization & Regional Defaults
+            4. Localization & Regional Defaults
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
@@ -156,8 +157,8 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
               <input
                 type="text"
                 disabled
-                value="Bangladeshi Taka (BDT / ৳)"
-                className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg font-semibold text-slate-600 cursor-not-allowed"
+                value="Bangladeshi Taka (BDT)"
+                className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg font-semibold text-slate-600 cursor-not-allowed text-xs"
               />
             </div>
 
@@ -166,7 +167,7 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
               <select
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
               >
                 <option value="Asia/Dhaka">Asia/Dhaka (GMT+6)</option>
               </select>
@@ -177,10 +178,10 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
               <select
                 value={dateFormat}
                 onChange={(e) => setDateFormat(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs"
               >
-                <option value="DD MMM YYYY">DD MMM YYYY (e.g. 12 Oct 2026)</option>
-                <option value="YYYY-MM-DD">YYYY-MM-DD (e.g. 2026-10-12)</option>
+                <option value="DD MMM YYYY">DD MMM YYYY (e.g. 13 Oct 2026)</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD (e.g. 2026-10-13)</option>
               </select>
             </div>
           </div>

@@ -12,26 +12,21 @@ interface HeaderProps {
 }
 
 const moduleTitles: Record<ModuleId, { title: string; subtitle: string }> = {
-  dashboard: { title: 'Financial Dashboard', subtitle: 'Consolidated overview of personal cash flow and office fund balances' },
-  transactions: { title: 'Transaction Ledger', subtitle: 'Centralized financial ledger with strict category and ownership audit' },
+  dashboard: { title: 'Financial Dashboard', subtitle: 'Overview of accounts, cash balance, personal expenses, and incomes' },
+  transactions: { title: 'Transaction Ledger', subtitle: 'Centralized financial ledger with final approval and edit locks' },
   income: { title: 'Income Management', subtitle: 'Track salary, overtime, freelance, and custom personal earnings' },
   expense: { title: 'Expense Management', subtitle: 'Personal and family consumption expense management' },
-  office_fund: { title: 'Office Fund & Settlement', subtitle: 'Employer advance funds, official office expenses, and personal use settlements' },
-  personal_finance: { title: 'Personal Finance', subtitle: 'Individual spending analytics, habits, and cash-flow breakdown' },
-  family_expense: { title: 'Family Expenses', subtitle: 'Household expenses, rent, utilities, and parent support tracking' },
+  office_fund: { title: 'Office Fund Management', subtitle: 'Employer advance funds and official office expenses' },
   accounts: { title: 'Accounts & Wallets', subtitle: 'Cash in hand, bank accounts, bKash, Nagad, and mobile wallets' },
   transfers: { title: 'Account Transfers', subtitle: 'Inter-account liquidity movement with cashout fee accounting' },
   categories: { title: 'Categories & Subcategories', subtitle: 'Customizable hierarchy of income and expense categories' },
   budgets: { title: 'Monthly Budgets', subtitle: 'Category-wise spending limits and budget utilization alerts' },
   savings: { title: 'Savings & Financial Goals', subtitle: 'Target savings reserves, DPS, and purchase goal tracking' },
   loans: { title: 'Loans, Debts & Receivables', subtitle: 'Borrowed loans, lent funds, counterparties, and repayment history' },
-  recurring: { title: 'Recurring Transactions', subtitle: 'Scheduled monthly salary, flat rent, subscriptions, and utility bills' },
   reports: { title: 'Financial Reporting Engine', subtitle: 'Custom date-wise, monthly, category, and cash flow reports' },
-  pdf_reports: { title: 'PDF & Printable Reports', subtitle: 'Dedicated multi-page downloadable PDF reports formatted for BDT (৳)' },
+  pdf_reports: { title: 'PDF & Printable Reports', subtitle: 'Dedicated multi-page downloadable PDF reports formatted for BDT' },
   backup: { title: 'Data Backup & Restore', subtitle: 'Export full JSON backup payload and restore validated records' },
-  audit: { title: 'Activity & Audit History', subtitle: 'Traceable log of all creations, edits, reversals, and settlements' },
-  testing_qa: { title: 'Automated Tests & QA Suite', subtitle: 'Interactive verification of calculation rules and financial integrity' },
-  settings: { title: 'Settings & Preferences', subtitle: 'Application defaults, salary schedule, currency, and profile config' },
+  settings: { title: 'Settings & Preferences', subtitle: 'Application defaults, password security, currency, and profile config' },
 };
 
 export const Header: React.FC<HeaderProps> = ({
@@ -60,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Action Buttons Toolbar */}
       <div className="flex items-center flex-wrap gap-2 shrink-0">
         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-md border border-slate-200">
-          Currency: BDT (৳)
+          Currency: BDT
         </span>
 
         <button

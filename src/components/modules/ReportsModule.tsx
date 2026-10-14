@@ -8,7 +8,7 @@ import {
   Transaction,
   UserSettings,
 } from '../../types/finance';
-import { calculateFinancialSummary, filterTransactions, formatCurrency, formatDate } from '../../services/financialEngine';
+import { calculateFinancialSummary, filterTransactions, formatCurrency, formatDate, formatNumberOnly } from '../../services/financialEngine';
 import { exportTransactionsToCsv } from '../../services/csvExporter';
 import { generatePdfReport } from '../../services/pdfReportGenerator';
 
@@ -72,10 +72,10 @@ export const ReportsModule: React.FC<ReportsModuleProps> = ({
         <div>
           <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-sky-600" />
-            <span>Advanced Financial Reporting Engine</span>
+            <span>Executive Financial Reporting Engine</span>
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Generate custom date-wise, monthly, category-wise, office fund, and cash flow reports
+            Generate custom date-wise, monthly, category-wise, and office fund statements
           </p>
         </div>
 
@@ -89,10 +89,10 @@ export const ReportsModule: React.FC<ReportsModuleProps> = ({
           </button>
           <button
             onClick={handleDownloadPdf}
-            className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+            className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>Export Report to PDF</span>
+            <span>Export Official PDF Report</span>
           </button>
         </div>
       </div>
@@ -115,9 +115,8 @@ export const ReportsModule: React.FC<ReportsModuleProps> = ({
               <option value="monthly">Monthly Consolidated Report</option>
               <option value="date_wise">Date-Wise Detailed Ledger</option>
               <option value="category_wise">Category-Wise Breakdown</option>
-              <option value="office_settlement">Office Fund Settlement Report</option>
-              <option value="personal_expense">Personal Expense Report</option>
-              <option value="family_expense">Family Expense Report</option>
+              <option value="personal_expense">Personal Expense Statement</option>
+              <option value="family_expense">Family Expense Statement</option>
             </select>
           </div>
 
@@ -174,73 +173,74 @@ export const ReportsModule: React.FC<ReportsModuleProps> = ({
       </div>
 
       {/* Generated Report Preview Sheet */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+      <div className="bg-white rounded-2xl border border-slate-300 p-8 shadow-sm space-y-6">
         {/* Report Header */}
-        <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 uppercase">
-              REPORT PREVIEW
+            <span className="text-[10px] font-bold text-sky-800 bg-sky-100 px-2.5 py-0.5 rounded border border-sky-200 uppercase tracking-wide">
+              OFFICIAL STATEMENT PREVIEW
             </span>
-            <h3 className="text-xl font-bold text-slate-900 mt-1 uppercase">{reportType.replace(/_/g, ' ')} REPORT</h3>
-            <p className="text-xs text-slate-500">
-              Period: {startDate && endDate ? `${startDate} to ${endDate}` : 'All Historical Records'} · Filtered Records: {filteredTxs.length}
+            <h3 className="text-2xl font-bold text-slate-900 mt-1 uppercase tracking-tight">{reportType.replace(/_/g, ' ')} STATEMENT</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Period: {startDate && endDate ? `${startDate} to ${endDate}` : 'All Historical Records'} · Total Records: {filteredTxs.length}
             </p>
           </div>
 
-          <div className="text-right text-xs text-slate-500">
-            <p className="font-semibold text-slate-800">{userSettings.appName} Ledger System</p>
-            <p>Generated: {new Date().toLocaleDateString('en-GB')}</p>
+          <div className="text-right text-xs text-slate-600">
+            <p className="font-bold text-slate-900 text-sm">{userSettings.appName}</p>
+            <p className="text-slate-500">{userSettings.userName}</p>
+            <p className="text-[11px] text-slate-400 mt-1 font-mono">Date: {new Date().toLocaleDateString('en-GB')}</p>
           </div>
         </div>
 
-        {/* Summary Metrics Grid in Report */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span className="text-slate-500 block text-[10px] font-semibold">Total Personal Income</span>
-            <span className="font-mono font-bold text-sm text-emerald-700">
+        {/* Executive Metrics Cards in Preview */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">Total Personal Income</span>
+            <p className="text-xl font-bold font-sans tracking-tight text-emerald-950 tabular-nums">
               {formatCurrency(summary.totalPersonalIncome, userSettings.currencySymbol)}
-            </span>
+            </p>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span className="text-slate-500 block text-[10px] font-semibold">Total Personal Expenses</span>
-            <span className="font-mono font-bold text-sm text-rose-700">
+          <div className="p-4 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-800 block">Total Personal Expenses</span>
+            <p className="text-xl font-bold font-sans tracking-tight text-rose-950 tabular-nums">
               {formatCurrency(summary.totalPersonalExpenses, userSettings.currencySymbol)}
-            </span>
+            </p>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span className="text-slate-500 block text-[10px] font-semibold">Total Family Expenses</span>
-            <span className="font-mono font-bold text-sm text-amber-700">
+          <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">Total Family Expenses</span>
+            <p className="text-xl font-bold font-sans tracking-tight text-amber-950 tabular-nums">
               {formatCurrency(summary.totalFamilyExpenses, userSettings.currencySymbol)}
-            </span>
+            </p>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-            <span className="text-slate-500 block text-[10px] font-semibold">Net Personal Cashflow</span>
-            <span className="font-mono font-bold text-sm text-slate-900">
-              {formatCurrency(summary.netPersonalCashFlow, userSettings.currencySymbol)}
-            </span>
+          <div className="p-4 bg-sky-50/70 border border-sky-200 rounded-2xl space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-sky-800 block">Net Wallet Cash Balance</span>
+            <p className="text-xl font-bold font-sans tracking-tight text-sky-950 tabular-nums">
+              {formatCurrency(summary.totalCashAndBankBalances, userSettings.currencySymbol)}
+            </p>
           </div>
         </div>
 
         {/* Report Transactions Table */}
-        <div className="border border-slate-200 rounded-xl overflow-hidden">
-          <table className="w-full text-left text-xs">
+        <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+          <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-900 text-white text-[10px] font-bold uppercase">
-                <th className="py-2.5 px-3">Date</th>
-                <th className="py-2.5 px-3">Payee / Party</th>
-                <th className="py-2.5 px-3">Category</th>
-                <th className="py-2.5 px-3">Type</th>
-                <th className="py-2.5 px-3">Account</th>
-                <th className="py-2.5 px-3 text-right">Amount (BDT)</th>
+              <tr className="bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider">
+                <th className="py-3 px-4">Date</th>
+                <th className="py-3 px-4">Payee / Counterparty</th>
+                <th className="py-3 px-4">Category</th>
+                <th className="py-3 px-4">Type</th>
+                <th className="py-3 px-4">Account</th>
+                <th className="py-3 px-4 text-right">Amount (BDT)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredTxs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400 italic">
+                  <td colSpan={6} className="py-10 text-center text-slate-400 italic">
                     No transactions match the selected report parameters.
                   </td>
                 </tr>
@@ -248,19 +248,28 @@ export const ReportsModule: React.FC<ReportsModuleProps> = ({
                 filteredTxs.map((tx) => {
                   const category = categories.find((c) => c.id === tx.categoryId);
                   const account = accounts.find((a) => a.id === tx.sourceAccountId);
+                  const isIncome =
+                    tx.type === 'personal_income' ||
+                    tx.type === 'salary_income' ||
+                    tx.type === 'office_fund_received' ||
+                    tx.type === 'additional_income' ||
+                    tx.type === 'refund';
+
                   return (
-                    <tr key={tx.id} className="hover:bg-slate-50 font-mono">
-                      <td className="py-2.5 px-3 text-slate-600">{formatDate(tx.date)}</td>
-                      <td className="py-2.5 px-3 font-semibold text-slate-900 font-sans">{tx.payeePayer}</td>
-                      <td className="py-2.5 px-3 text-slate-700 font-sans">{category?.name || 'Uncategorized'}</td>
-                      <td className="py-2.5 px-3 font-sans">
-                        <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[9px] font-bold">
+                    <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-3 px-4 text-slate-600 font-mono whitespace-nowrap">{formatDate(tx.date)}</td>
+                      <td className="py-3 px-4 font-semibold text-slate-900">{tx.payeePayer}</td>
+                      <td className="py-3 px-4 text-slate-700">{category?.name || 'Uncategorized'}</td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 bg-slate-100 text-slate-800 rounded text-[10px] font-bold">
                           {tx.type.replace(/_/g, ' ').toUpperCase()}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-slate-600 font-sans">{account?.name || '-'}</td>
-                      <td className="py-2.5 px-3 text-right font-bold text-slate-900">
-                        {formatCurrency(tx.amount, userSettings.currencySymbol)}
+                      <td className="py-3 px-4 text-slate-600">{account?.name || '-'}</td>
+                      <td className="py-3 px-4 text-right font-bold text-slate-900 font-sans tracking-tight tabular-nums">
+                        <span className={isIncome ? 'text-emerald-700' : 'text-slate-900'}>
+                          {isIncome ? '+' : '-'}{formatNumberOnly(tx.amount)}
+                        </span>
                       </td>
                     </tr>
                   );

@@ -162,7 +162,7 @@ export const BudgetsModule: React.FC<BudgetsModuleProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Budget Amount (৳) *</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Budget Amount (BDT) *</label>
               <input
                 type="number"
                 step="0.01"
@@ -170,7 +170,7 @@ export const BudgetsModule: React.FC<BudgetsModuleProps> = ({
                 placeholder="0.00"
                 value={budgetAmount}
                 onChange={(e) => setBudgetAmount(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-mono"
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-sans"
               />
             </div>
 

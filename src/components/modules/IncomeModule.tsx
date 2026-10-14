@@ -71,21 +71,21 @@ export const IncomeModule: React.FC<IncomeModuleProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-1">
           <span className="text-xs font-semibold text-emerald-700">Total Recorded Income</span>
-          <p className="text-2xl font-bold font-mono text-emerald-900">
+          <p className="text-2xl font-bold font-sans text-emerald-900">
             {formatCurrency(totalAllIncome, userSettings.currencySymbol)}
           </p>
         </div>
 
         <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-1">
           <span className="text-xs font-semibold text-slate-500">Salary & Bonus Income</span>
-          <p className="text-2xl font-bold font-mono text-slate-900">
+          <p className="text-2xl font-bold font-sans text-slate-900">
             {formatCurrency(totalSalary, userSettings.currencySymbol)}
           </p>
         </div>
 
         <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-1">
           <span className="text-xs font-semibold text-slate-500">Freelance & Additional</span>
-          <p className="text-2xl font-bold font-mono text-slate-900">
+          <p className="text-2xl font-bold font-sans text-slate-900">
             {formatCurrency(totalAdditional, userSettings.currencySymbol)}
           </p>
         </div>
@@ -104,7 +104,7 @@ export const IncomeModule: React.FC<IncomeModuleProps> = ({
           </div>
           <div className="p-3 bg-slate-50 rounded-lg">
             <span className="text-slate-500 block">Configured Basic Salary:</span>
-            <span className="font-bold text-slate-800 font-mono">
+            <span className="font-bold text-slate-800 font-sans">
               {formatCurrency(userSettings.monthlySalary, userSettings.currencySymbol)} / month
             </span>
           </div>
@@ -148,7 +148,7 @@ export const IncomeModule: React.FC<IncomeModuleProps> = ({
                 const account = accounts.find((a) => a.id === tx.sourceAccountId);
                 return (
                   <tr key={tx.id} className="hover:bg-slate-50">
-                    <td className="py-3 px-4 font-mono text-slate-600">{formatDate(tx.date)}</td>
+                    <td className="py-3 px-4 font-sans text-slate-600">{formatDate(tx.date)}</td>
                     <td className="py-3 px-4 font-semibold text-slate-900">{tx.payeePayer}</td>
                     <td className="py-3 px-4 text-slate-700">{tx.description}</td>
                     <td className="py-3 px-4">
@@ -157,7 +157,7 @@ export const IncomeModule: React.FC<IncomeModuleProps> = ({
                       </span>
                     </td>
                     <td className="py-3 px-4 text-slate-600">{account?.name || '-'}</td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-emerald-700">
+                    <td className="py-3 px-4 text-right font-sans font-bold text-emerald-700">
                       +{formatCurrency(tx.amount, userSettings.currencySymbol)}
                     </td>
                   </tr>

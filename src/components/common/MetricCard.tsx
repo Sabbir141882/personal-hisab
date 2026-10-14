@@ -64,7 +64,7 @@ const variantStyles: Record<
 export const MetricCard: React.FC<MetricCardProps> = ({
   title,
   amount,
-  currencySymbol = '৳',
+  currencySymbol = 'BDT',
   subtitle,
   icon: Icon,
   variant = 'slate',
@@ -96,7 +96,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         </div>
       </div>
 
-      <div className={`text-xl font-bold font-mono tracking-tight tabular-nums ${styles.text}`}>
+      <div className={`text-xl font-bold font-sans tracking-tight tabular-nums ${styles.text}`}>
         {formatCurrency(amount, currencySymbol)}
       </div>
 

@@ -82,6 +82,8 @@ export interface Transaction {
   relatedDebtId?: string;
   familyMember?: string;
   status: 'completed' | 'pending' | 'reversed';
+  isApproved?: boolean; // When approved, entry CANNOT be edited or deleted
+  approvedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -205,6 +207,7 @@ export interface UserSettings {
   salaryEmployer: string;
   salaryAccountId: string;
   enableDemoData: boolean;
+  approvalPassword?: string; // Required for final approval locking
 }
 
 export interface FilterOptions {

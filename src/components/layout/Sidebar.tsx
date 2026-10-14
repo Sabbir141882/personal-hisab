@@ -1,25 +1,19 @@
 import React from 'react';
 import {
-  Activity,
   ArrowLeftRight,
   BarChart3,
   Briefcase,
   Building,
-  CheckSquare,
   CreditCard,
   Database,
-  DollarSign,
   FileText,
   FolderTree,
   Heart,
-  Home,
   LayoutDashboard,
   PieChart,
   PlusCircle,
   Receipt,
-  Repeat,
   Settings,
-  ShieldCheck,
   Target,
   TrendingDown,
   TrendingUp,
@@ -32,20 +26,15 @@ export type ModuleId =
   | 'income'
   | 'expense'
   | 'office_fund'
-  | 'personal_finance'
-  | 'family_expense'
   | 'accounts'
   | 'transfers'
   | 'categories'
   | 'budgets'
   | 'savings'
   | 'loans'
-  | 'recurring'
   | 'reports'
   | 'pdf_reports'
   | 'backup'
-  | 'audit'
-  | 'testing_qa'
   | 'settings';
 
 interface SidebarProps {
@@ -74,14 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'income' as ModuleId, label: 'Income Management', icon: TrendingUp },
         { id: 'expense' as ModuleId, label: 'Expense Management', icon: TrendingDown },
-        {
-          id: 'office_fund' as ModuleId,
-          label: 'Office Fund & Settlement',
-          icon: Building,
-          badge: 'CRITICAL',
-        },
-        { id: 'personal_finance' as ModuleId, label: 'Personal Spending', icon: Briefcase },
-        { id: 'family_expense' as ModuleId, label: 'Family Expenses', icon: Heart },
+        { id: 'office_fund' as ModuleId, label: 'Office Fund Advances', icon: Building },
       ],
     },
     {
@@ -91,7 +73,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'budgets' as ModuleId, label: 'Monthly Budgets', icon: PieChart },
         { id: 'savings' as ModuleId, label: 'Savings & Goals', icon: Target },
         { id: 'loans' as ModuleId, label: 'Loans & Receivables', icon: CreditCard },
-        { id: 'recurring' as ModuleId, label: 'Recurring Rules', icon: Repeat },
       ],
     },
     {
@@ -99,14 +80,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'reports' as ModuleId, label: 'Financial Reports', icon: BarChart3 },
         { id: 'pdf_reports' as ModuleId, label: 'PDF & Print Reports', icon: FileText },
+        { id: 'backup' as ModuleId, label: 'Backup & Restore', icon: Database },
       ],
     },
     {
-      groupTitle: 'SYSTEM & TOOLS',
+      groupTitle: 'SYSTEM & SETTINGS',
       items: [
-        { id: 'backup' as ModuleId, label: 'Backup & Restore', icon: Database },
-        { id: 'audit' as ModuleId, label: 'Audit History', icon: Activity },
-        { id: 'testing_qa' as ModuleId, label: 'Automated Tests & QA', icon: ShieldCheck },
         { id: 'settings' as ModuleId, label: 'Settings & Config', icon: Settings },
       ],
     },
@@ -117,8 +96,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Brand Header */}
       <div className="p-4 border-b border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-lg bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-lg">
-            ৳
+          <div className="w-9 h-9 rounded-lg bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-bold text-xs">
+            BDT
           </div>
           <div>
             <h1 className="font-bold text-white text-base tracking-tight leading-none">
@@ -135,7 +114,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-3">
         <button
           onClick={() => onQuickAddTx()}
-          className="w-full bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer"
+          className="w-full bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-xs cursor-pointer"
         >
           <PlusCircle className="w-4 h-4" />
           <span>New Transaction</span>
@@ -167,11 +146,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-sky-400' : 'text-slate-400'}`} />
                       <span className="truncate">{item.label}</span>
                     </div>
-                    {item.badge && (
-                      <span className="text-[9px] font-bold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/30">
-                        {item.badge}
-                      </span>
-                    )}
                   </button>
                 );
               })}
@@ -188,7 +162,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div className="min-w-0">
             <p className="text-xs font-medium text-slate-200 truncate">Sabbir Ahmed</p>
-            <p className="text-[10px] text-slate-500 truncate">BDT (৳) · Asia/Dhaka</p>
+            <p className="text-[10px] text-slate-500 truncate">BDT · Asia/Dhaka</p>
           </div>
         </div>
       </div>

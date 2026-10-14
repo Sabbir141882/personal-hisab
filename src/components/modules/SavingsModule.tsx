@@ -120,7 +120,7 @@ export const SavingsModule: React.FC<SavingsModuleProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Target Amount (৳) *</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Target Amount (BDT) *</label>
               <input
                 type="number"
                 step="0.01"
@@ -128,19 +128,19 @@ export const SavingsModule: React.FC<SavingsModuleProps> = ({
                 placeholder="0.00"
                 value={targetAmount}
                 onChange={(e) => setTargetAmount(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-mono"
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-sans"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Initial Saved (৳)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Initial Saved (BDT)</label>
               <input
                 type="number"
                 step="0.01"
                 placeholder="0.00"
                 value={currentAmount}
                 onChange={(e) => setCurrentAmount(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono"
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-sans"
               />
             </div>
           </div>

@@ -49,7 +49,7 @@ export const PdfReportsModule: React.FC<PdfReportsModuleProps> = ({
             <span>Dedicated PDF Report Generation</span>
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Generates vector PDF reports formatted in BDT (৳) without website sidebars or UI clutter
+            Generates vector PDF reports formatted in BDT without website sidebars or UI clutter
           </p>
         </div>
 
@@ -58,7 +58,7 @@ export const PdfReportsModule: React.FC<PdfReportsModuleProps> = ({
           className="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
         >
           <Download className="w-4 h-4" />
-          <span>Download A4 PDF Report</span>
+          <span>Download Official A4 PDF Report</span>
         </button>
       </div>
 
@@ -100,45 +100,55 @@ export const PdfReportsModule: React.FC<PdfReportsModuleProps> = ({
 
       {/* PDF Document Preview Box */}
       <div className="bg-white rounded-2xl border border-slate-300 p-8 shadow-md max-w-4xl mx-auto space-y-6">
-        <div className="bg-slate-900 text-white p-4 rounded-xl flex items-center justify-between">
+        <div className="bg-slate-900 text-white p-5 rounded-2xl flex items-center justify-between">
           <div>
-            <h1 className="font-bold text-base">{userSettings.appName}</h1>
+            <h1 className="font-bold text-lg tracking-tight">{userSettings.appName}</h1>
             <p className="text-xs text-slate-300">Official Financial Statement · {userSettings.userName}</p>
           </div>
-          <span className="text-xs font-mono">{new Date().toLocaleDateString('en-GB')}</span>
+          <span className="text-xs font-mono bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
+            {new Date().toLocaleDateString('en-GB')}
+          </span>
         </div>
 
         <div>
-          <h2 className="text-lg font-bold text-slate-900 uppercase">{reportTitle}</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">{reportTitle}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">
             Period: {startDate && endDate ? `${startDate} to ${endDate}` : 'All Ledger Entries'}
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <span className="text-[10px] text-slate-500 block font-sans">Personal Income</span>
-            <span className="font-bold text-emerald-700">{formatCurrency(summary.totalPersonalIncome, userSettings.currencySymbol)}</span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-1">
+            <span className="text-[10px] text-emerald-800 font-bold uppercase block">Personal Income</span>
+            <span className="font-bold text-sm text-emerald-950 font-sans tracking-tight tabular-nums block">
+              {formatCurrency(summary.totalPersonalIncome, userSettings.currencySymbol)}
+            </span>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <span className="text-[10px] text-slate-500 block font-sans">Personal Expenses</span>
-            <span className="font-bold text-rose-700">{formatCurrency(summary.totalPersonalExpenses, userSettings.currencySymbol)}</span>
+          <div className="p-3.5 bg-rose-50/70 border border-rose-200 rounded-xl space-y-1">
+            <span className="text-[10px] text-rose-800 font-bold uppercase block">Personal Expenses</span>
+            <span className="font-bold text-sm text-rose-950 font-sans tracking-tight tabular-nums block">
+              {formatCurrency(summary.totalPersonalExpenses, userSettings.currencySymbol)}
+            </span>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <span className="text-[10px] text-slate-500 block font-sans">Office Advances</span>
-            <span className="font-bold text-purple-700">{formatCurrency(summary.totalOfficeFundsReceived, userSettings.currencySymbol)}</span>
+          <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl space-y-1">
+            <span className="text-[10px] text-amber-800 font-bold uppercase block">Family Expenses</span>
+            <span className="font-bold text-sm text-amber-950 font-sans tracking-tight tabular-nums block">
+              {formatCurrency(summary.totalFamilyExpenses, userSettings.currencySymbol)}
+            </span>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <span className="text-[10px] text-slate-500 block font-sans">Official Office Exp</span>
-            <span className="font-bold text-slate-900">{formatCurrency(summary.totalOfficeExpenses, userSettings.currencySymbol)}</span>
+          <div className="p-3.5 bg-sky-50/70 border border-sky-200 rounded-xl space-y-1">
+            <span className="text-[10px] text-sky-800 font-bold uppercase block">Total Net Cash Balance</span>
+            <span className="font-bold text-sm text-sky-950 font-sans tracking-tight tabular-nums block">
+              {formatCurrency(summary.totalCashAndBankBalances, userSettings.currencySymbol)}
+            </span>
           </div>
         </div>
 
         <p className="text-xs text-slate-400 italic text-center pt-4 border-t border-slate-100">
-          Clicking "Download A4 PDF Report" generates a pristine multi-page vector PDF file formatted for A4 printing.
+          Clicking "Download Official A4 PDF Report" generates a high-resolution, vector PDF file formatted for A4 printing.
         </p>
       </div>
     </div>

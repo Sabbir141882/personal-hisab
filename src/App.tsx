@@ -1,26 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Account,
-  AuditEvent,
   Budget,
   Category,
   DebtReceivable,
   OfficeFund,
-  RecurringTransaction,
   SavingsGoal,
   Transaction,
   UserSettings,
 } from './types/finance';
 import {
-  addAuditLog,
   clearAllData,
   loadAccounts,
-  loadAuditLogs,
   loadBudgets,
   loadCategories,
   loadDebts,
   loadOfficeFunds,
-  loadRecurring,
   loadSavingsGoals,
   loadSettings,
   loadTransactions,
@@ -30,7 +25,6 @@ import {
   saveCategories,
   saveDebts,
   saveOfficeFunds,
-  saveRecurring,
   saveSavingsGoals,
   saveSettings,
   saveTransactions,
@@ -45,6 +39,7 @@ import { Header } from './components/layout/Header';
 import { TransactionFormModal } from './components/common/TransactionFormModal';
 import { OfficeFundModal } from './components/common/OfficeFundModal';
 import { TransferModal } from './components/common/TransferModal';
+import { ApproveLockModal } from './components/common/ApproveLockModal';
 
 import { DashboardModule } from './components/modules/DashboardModule';
 import { TransactionsModule } from './components/modules/TransactionsModule';
@@ -56,12 +51,9 @@ import { CategoriesModule } from './components/modules/CategoriesModule';
 import { BudgetsModule } from './components/modules/BudgetsModule';
 import { SavingsModule } from './components/modules/SavingsModule';
 import { LoansModule } from './components/modules/LoansModule';
-import { RecurringModule } from './components/modules/RecurringModule';
 import { ReportsModule } from './components/modules/ReportsModule';
 import { PdfReportsModule } from './components/modules/PdfReportsModule';
 import { BackupRestoreModule } from './components/modules/BackupRestoreModule';
-import { AuditLogModule } from './components/modules/AuditLogModule';
-import { TestingQAModule } from './components/modules/TestingQAModule';
 import { SettingsModule } from './components/modules/SettingsModule';
 
 export function App() {
@@ -76,8 +68,6 @@ export function App() {
   const [budgets, setBudgets] = useState<Budget[]>(loadBudgets());
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(loadSavingsGoals());
   const [debts, setDebts] = useState<DebtReceivable[]>(loadDebts());
-  const [recurring, setRecurring] = useState<RecurringTransaction[]>(loadRecurring());
-  const [auditLogs, setAuditLogs] = useState<AuditEvent[]>(loadAuditLogs());
 
   // Modal Control States
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
@@ -86,6 +76,7 @@ export function App() {
 
   const [isOfficeModalOpen, setIsOfficeModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
 
   // Recalculate account balances based on active transaction ledger
   const calculatedAccounts = calculateAccountBalances(accounts, transactions);
@@ -108,19 +99,25 @@ export function App() {
     setBudgets(loadBudgets());
     setSavingsGoals(loadSavingsGoals());
     setDebts(loadDebts());
-    setRecurring(loadRecurring());
-    setAuditLogs(loadAuditLogs());
   };
 
   // Handlers for Transactions
   const handleSaveTransaction = (txData: Partial<Transaction>) => {
+    // If editing an approved entry, reject!
+    if (txData.id) {
+      const existing = transactions.find((t) => t.id === txData.id);
+      if (existing && existing.isApproved) {
+        alert('This entry has been approved and locked. It cannot be modified or edited!');
+        return;
+      }
+    }
+
     let updatedTxs: Transaction[];
     if (txData.id) {
-      // Edit existing record
+      // Edit existing unapproved record
       updatedTxs = transactions.map((t) => (t.id === txData.id ? ({ ...t, ...txData } as Transaction) : t));
-      addAuditLog('update', 'transaction', txData.id, `Updated transaction "${txData.description}"`);
     } else {
-      // Create new record
+      // Create new record (starts as unapproved / editable)
       const newTx: Transaction = {
         id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
         date: txData.date || new Date().toISOString().split('T')[0],
@@ -141,21 +138,25 @@ export function App() {
         tags: txData.tags || [],
         notes: txData.notes,
         status: 'completed',
+        isApproved: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
       updatedTxs = [newTx, ...transactions];
-      addAuditLog('create', 'transaction', newTx.id, `Created transaction "${newTx.description}" (৳${newTx.amount})`);
     }
 
     saveTransactions(updatedTxs);
     setTransactions(updatedTxs);
-    setAuditLogs(loadAuditLogs());
   };
 
   const handleReverseTransaction = (txId: string) => {
     const tx = transactions.find((t) => t.id === txId);
     if (!tx) return;
+
+    if (tx.isApproved) {
+      alert('This entry has been approved and locked with password. It cannot be deleted or reversed!');
+      return;
+    }
 
     const updated = transactions.map((t) =>
       t.id === txId ? { ...t, status: 'reversed' as const, updatedAt: new Date().toISOString() } : t
@@ -163,8 +164,49 @@ export function App() {
 
     saveTransactions(updated);
     setTransactions(updated);
-    addAuditLog('reverse', 'transaction', txId, `Reversed transaction "${tx.description}"`);
-    setAuditLogs(loadAuditLogs());
+  };
+
+  const [approveTargetTxIds, setApproveTargetTxIds] = useState<string[] | null>(null);
+
+  const handleOpenApproveModal = (targetTxIds?: string[]) => {
+    setApproveTargetTxIds(targetTxIds || null);
+    setIsApproveModalOpen(true);
+  };
+
+  // Final Approval Locking with Password Authorization
+  const handleConfirmApprove = (passwordInput: string): boolean => {
+    const pInput = passwordInput.trim();
+    const storedPass = (userSettings.approvalPassword || 'Sabbir@95AR').trim();
+
+    // Support exact match or matching without trailing dot
+    const matchStored = pInput === storedPass || pInput + '.' === storedPass || pInput === storedPass.replace(/\.$/, '');
+    const matchHardcoded = pInput === 'Sabbir@95AR' || pInput === 'Sabbir@95AR.';
+
+    if (!matchStored && !matchHardcoded) {
+      return false; // password mismatch
+    }
+
+    let updated: Transaction[];
+    if (approveTargetTxIds && approveTargetTxIds.length > 0) {
+      const targetSet = new Set(approveTargetTxIds);
+      updated = transactions.map((t) =>
+        targetSet.has(t.id) && !t.isApproved
+          ? { ...t, isApproved: true, approvedAt: new Date().toISOString() }
+          : t
+      );
+    } else {
+      // Mark all unapproved completed transactions as approved & locked!
+      updated = transactions.map((t) =>
+        t.status === 'completed' && !t.isApproved
+          ? { ...t, isApproved: true, approvedAt: new Date().toISOString() }
+          : t
+      );
+    }
+
+    saveTransactions(updated);
+    setTransactions(updated);
+    setApproveTargetTxIds(null);
+    return true; // success
   };
 
   // Handlers for Office Funds
@@ -174,7 +216,7 @@ export function App() {
       title: fundData.title || 'Office Advance',
       dateReceived: fundData.dateReceived || new Date().toISOString().split('T')[0],
       amountReceived: fundData.amountReceived || 0,
-      employerSource: fundData.employerSource || 'TechCorp Accounts',
+      employerSource: fundData.employerSource || 'Employer',
       receivingAccountId: fundData.receivingAccountId || accounts[0]?.id || '',
       purpose: fundData.purpose || 'Official Expenses',
       referenceNumber: fundData.referenceNumber,
@@ -204,6 +246,7 @@ export function App() {
       relatedOfficeFundId: newFund.id,
       tags: ['Office Advance'],
       status: 'completed',
+      isApproved: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -211,9 +254,6 @@ export function App() {
     const updatedTxs = [fundTx, ...transactions];
     saveTransactions(updatedTxs);
     setTransactions(updatedTxs);
-
-    addAuditLog('create', 'office_fund', newFund.id, `Recorded office advance "${newFund.title}" (৳${newFund.amountReceived})`);
-    setAuditLogs(loadAuditLogs());
   };
 
   // Accounts Handlers
@@ -236,15 +276,12 @@ export function App() {
     const updated = [...accounts, newAcc];
     saveAccounts(updated);
     setAccounts(updated);
-    addAuditLog('create', 'account', newAcc.id, `Created wallet/account "${newAcc.name}"`);
-    setAuditLogs(loadAuditLogs());
   };
 
   const handleAdjustAccountBalance = (accId: string, newBalance: number, notes: string) => {
     const acc = accounts.find((a) => a.id === accId);
     if (!acc) return;
 
-    // Create adjustment transaction record
     const adjTx: Transaction = {
       id: 'tx_adj_' + Date.now(),
       date: new Date().toISOString().split('T')[0],
@@ -258,6 +295,7 @@ export function App() {
       description: `Balance Adjustment: ${notes}`,
       tags: ['Reconciliation'],
       status: 'completed',
+      isApproved: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -265,9 +303,6 @@ export function App() {
     const updatedTxs = [adjTx, ...transactions];
     saveTransactions(updatedTxs);
     setTransactions(updatedTxs);
-
-    addAuditLog('update', 'account', accId, `Reconciled "${acc.name}" balance to ৳${newBalance}`);
-    setAuditLogs(loadAuditLogs());
   };
 
   // Reset & Clear handlers
@@ -302,6 +337,7 @@ export function App() {
             }}
             onOpenOfficeModal={() => setIsOfficeModalOpen(true)}
             onOpenTransferModal={() => setIsTransferModalOpen(true)}
+            onOpenApproveModal={(ids) => handleOpenApproveModal(ids)}
             onSelectModule={setActiveModule}
           />
         );
@@ -324,6 +360,7 @@ export function App() {
               setIsTxModalOpen(true);
             }}
             onReverseTransaction={handleReverseTransaction}
+            onOpenApproveModal={(ids) => handleOpenApproveModal(ids)}
           />
         );
 
@@ -343,8 +380,6 @@ export function App() {
         );
 
       case 'expense':
-      case 'personal_finance':
-      case 'family_expense':
         return (
           <ExpenseModule
             transactions={transactions}
@@ -496,46 +531,6 @@ export function App() {
           />
         );
 
-      case 'recurring':
-        return (
-          <RecurringModule
-            recurring={recurring}
-            accounts={calculatedAccounts}
-            categories={categories}
-            userSettings={userSettings}
-            onSaveRecurring={(rData) => {
-              const newR: RecurringTransaction = {
-                id: 'rec_' + Date.now(),
-                title: rData.title || 'Recurring Rule',
-                type: rData.type || 'personal_expense',
-                amount: rData.amount || 0,
-                frequency: rData.frequency || 'monthly',
-                startDate: new Date().toISOString().split('T')[0],
-                nextDueDate: rData.nextDueDate || new Date().toISOString().split('T')[0],
-                sourceAccountId: rData.sourceAccountId || accounts[0]?.id || '',
-                categoryId: rData.categoryId || categories[0]?.id || '',
-                payeePayer: rData.payeePayer || 'Vendor',
-                description: rData.description || 'Recurring Rule',
-                autoProcess: false,
-                status: 'active',
-              };
-              const updated = [...recurring, newR];
-              saveRecurring(updated);
-              setRecurring(updated);
-            }}
-            onProcessDueTransaction={(rule) => {
-              handleSaveTransaction({
-                type: rule.type,
-                amount: rule.amount,
-                sourceAccountId: rule.sourceAccountId,
-                categoryId: rule.categoryId,
-                payeePayer: rule.payeePayer,
-                description: `Recurring Processed: ${rule.title}`,
-              });
-            }}
-          />
-        );
-
       case 'reports':
         return (
           <ReportsModule
@@ -567,19 +562,6 @@ export function App() {
           />
         );
 
-      case 'audit':
-        return <AuditLogModule auditLogs={auditLogs} />;
-
-      case 'testing_qa':
-        return (
-          <TestingQAModule
-            transactions={transactions}
-            accounts={calculatedAccounts}
-            officeFunds={officeFunds}
-            userSettings={userSettings}
-          />
-        );
-
       case 'settings':
         return (
           <SettingsModule
@@ -595,6 +577,8 @@ export function App() {
         return null;
     }
   };
+
+  const unapprovedCount = transactions.filter((t) => t.status === 'completed' && !t.isApproved).length;
 
   return (
     <div className="flex h-screen bg-slate-100 font-sans text-slate-800 antialiased overflow-hidden">
@@ -651,6 +635,17 @@ export function App() {
         onClose={() => setIsTransferModalOpen(false)}
         onSave={handleSaveTransaction}
         accounts={calculatedAccounts}
+      />
+
+      <ApproveLockModal
+        isOpen={isApproveModalOpen}
+        onClose={() => {
+          setIsApproveModalOpen(false);
+          setApproveTargetTxIds(null);
+        }}
+        onConfirmApprove={handleConfirmApprove}
+        unapprovedCount={approveTargetTxIds ? approveTargetTxIds.length : unapprovedCount}
+        isSingleTx={approveTargetTxIds?.length === 1}
       />
     </div>
   );

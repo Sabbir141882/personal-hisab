@@ -11,18 +11,33 @@ import {
   TransactionType,
 } from '../types/finance';
 
-// Currency formatting utility for Bangladeshi Taka (BDT / ৳)
-export const formatCurrency = (amount: number, symbol = '৳'): string => {
+// Currency formatting utility for Bangladeshi Taka (BDT)
+export const formatCurrency = (amount: number, symbol = 'BDT'): string => {
+  const cleanSymbol = (!symbol || symbol === '৳' || symbol.includes('৳') || symbol.toLowerCase().includes('taka')) ? 'BDT' : symbol;
   if (isNaN(amount) || amount === null || amount === undefined) {
-    return `${symbol} 0.00`;
+    return `${cleanSymbol} 0.00`;
   }
   const isNegative = amount < 0;
   const absAmount = Math.abs(amount);
-  const formatted = absAmount.toLocaleString('en-BD', {
+  const formatted = absAmount.toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-  return `${isNegative ? '-' : ''}${symbol} ${formatted}`;
+  return `${isNegative ? '-' : ''}${cleanSymbol} ${formatted}`;
+};
+
+// Pure number formatting utility for tables without currency symbol prefix
+export const formatNumberOnly = (amount: number): string => {
+  if (isNaN(amount) || amount === null || amount === undefined) {
+    return '0.00';
+  }
+  const isNegative = amount < 0;
+  const absAmount = Math.abs(amount);
+  const formatted = absAmount.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return `${isNegative ? '-' : ''}${formatted}`;
 };
 
 export const formatDate = (dateString: string): string => {

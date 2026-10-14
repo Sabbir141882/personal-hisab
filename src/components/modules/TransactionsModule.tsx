@@ -2,21 +2,23 @@ import React, { useState } from 'react';
 import {
   ArrowDownRight,
   ArrowUpRight,
+  CheckSquare,
   Download,
   Filter,
+  Lock,
   PlusCircle,
   RotateCcw,
   Search,
-  Trash2,
+  ShieldCheck,
+  Square,
+  Unlock,
 } from 'lucide-react';
 import {
   Account,
   Category,
   FilterOptions,
-  FinancialOwnership,
   OfficeFund,
   Transaction,
-  TransactionType,
   UserSettings,
 } from '../../types/finance';
 import { filterTransactions, formatCurrency, formatDate } from '../../services/financialEngine';
@@ -32,6 +34,7 @@ interface TransactionsModuleProps {
   onOpenAddModal: () => void;
   onEditTransaction: (tx: Transaction) => void;
   onReverseTransaction: (txId: string) => void;
+  onOpenApproveModal: (targetTxIds?: string[]) => void;
 }
 
 export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
@@ -43,6 +46,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
   onOpenAddModal,
   onEditTransaction,
   onReverseTransaction,
+  onOpenApproveModal,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
@@ -55,6 +59,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
   const pageSize = 15;
 
   const [confirmTxId, setConfirmTxId] = useState<string | null>(null);
+  const [selectedTxIds, setSelectedTxIds] = useState<string[]>([]);
 
   const filters: FilterOptions = {
     searchQuery,
@@ -67,12 +72,32 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
   };
 
   const filtered = filterTransactions(transactions, filters);
+  const unapprovedTxs = transactions.filter((t) => t.status === 'completed' && !t.isApproved);
+  const unapprovedCount = unapprovedTxs.length;
+
   const totalCount = filtered.length;
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
   const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleExportCsv = () => {
     exportTransactionsToCsv(filtered, accounts, categories, 'my_finance_ledger.csv');
+  };
+
+  const toggleSelectTx = (id: string) => {
+    setSelectedTxIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAllPageUnapproved = () => {
+    const pageUnapprovedIds = paginated.filter((t) => !t.isApproved).map((t) => t.id);
+    const allSelected = pageUnapprovedIds.every((id) => selectedTxIds.includes(id));
+
+    if (allSelected) {
+      setSelectedTxIds((prev) => prev.filter((id) => !pageUnapprovedIds.includes(id)));
+    } else {
+      setSelectedTxIds((prev) => Array.from(new Set([...prev, ...pageUnapprovedIds])));
+    }
   };
 
   return (
@@ -94,7 +119,30 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
+            {selectedTxIds.length > 0 && (
+              <button
+                onClick={() => {
+                  onOpenApproveModal(selectedTxIds);
+                  setSelectedTxIds([]);
+                }}
+                className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Approve Selected ({selectedTxIds.length})</span>
+              </button>
+            )}
+
+            {unapprovedCount > 0 && (
+              <button
+                onClick={() => onOpenApproveModal()}
+                className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Approve All Pending ({unapprovedCount})</span>
+              </button>
+            )}
+
             <button
               onClick={handleExportCsv}
               className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
@@ -102,6 +150,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
             </button>
+
             <button
               onClick={onOpenAddModal}
               className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
@@ -146,7 +195,6 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
               <option value="personal_income">Personal Income</option>
               <option value="office_fund_received">Office Fund Advance</option>
               <option value="office_expense">Official Office Exp</option>
-              <option value="personal_expense_via_office">Personal via Office</option>
               <option value="personal_expense">Personal Expense</option>
               <option value="family_expense">Family Expense</option>
               <option value="account_transfer">Account Transfer</option>
@@ -225,20 +273,28 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">Description & Payee</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Type</th>
-                <th className="py-3 px-4">Ownership</th>
-                <th className="py-3 px-4">Account</th>
-                <th className="py-3 px-4 text-right">Amount (BDT)</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                <th className="py-3 px-3 w-10 text-center">
+                  <input
+                    type="checkbox"
+                    title="Select/Deselect all pending on this page"
+                    onChange={toggleSelectAllPageUnapproved}
+                    className="rounded border-slate-300 text-sky-600 cursor-pointer"
+                  />
+                </th>
+                <th className="py-3 px-3">Date</th>
+                <th className="py-3 px-3">Description & Payee</th>
+                <th className="py-3 px-3">Category</th>
+                <th className="py-3 px-3">Type</th>
+                <th className="py-3 px-3">Approval</th>
+                <th className="py-3 px-3">Account</th>
+                <th className="py-3 px-3 text-right">Amount (BDT)</th>
+                <th className="py-3 px-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-400 italic">
+                  <td colSpan={9} className="py-8 text-center text-slate-400 italic">
                     No transactions found matching your selected filters.
                   </td>
                 </tr>
@@ -252,31 +308,48 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                     tx.type === 'office_fund_received' ||
                     tx.type === 'additional_income' ||
                     tx.type === 'refund';
+                  const isSelected = selectedTxIds.includes(tx.id);
 
                   return (
-                    <tr key={tx.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4 font-mono text-slate-600 whitespace-nowrap">
+                    <tr
+                      key={tx.id}
+                      className={`hover:bg-slate-50/80 transition-colors ${
+                        isSelected ? 'bg-sky-50/50' : ''
+                      }`}
+                    >
+                      <td className="py-3 px-3 text-center">
+                        {!tx.isApproved ? (
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectTx(tx.id)}
+                            className="rounded border-slate-300 text-sky-600 cursor-pointer"
+                          />
+                        ) : (
+                          <span className="text-slate-300 text-[10px]">🔒</span>
+                        )}
+                      </td>
+
+                      <td className="py-3 px-3 font-sans text-slate-600 whitespace-nowrap">
                         {formatDate(tx.date)}
                       </td>
 
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-3">
                         <div className="font-semibold text-slate-900">{tx.description}</div>
                         <div className="text-[10px] text-slate-500">
                           {tx.payeePayer} {tx.referenceNumber && `· Ref: ${tx.referenceNumber}`}
                         </div>
                       </td>
 
-                      <td className="py-3 px-4 text-slate-700">
+                      <td className="py-3 px-3 text-slate-700">
                         {category?.name || 'Uncategorized'}
                       </td>
 
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-3">
                         <span
                           className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded ${
                             tx.type === 'office_fund_received'
                               ? 'bg-purple-100 text-purple-800'
-                              : tx.type === 'personal_expense_via_office'
-                              ? 'bg-amber-100 text-amber-800'
                               : isIncome
                               ? 'bg-emerald-100 text-emerald-800'
                               : 'bg-slate-100 text-slate-700'
@@ -286,44 +359,61 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                         </span>
                       </td>
 
-                      <td className="py-3 px-4">
-                        <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
-                            tx.ownership === 'office'
-                              ? 'border-purple-200 bg-purple-50 text-purple-700'
-                              : tx.ownership === 'family'
-                              ? 'border-amber-200 bg-amber-50 text-amber-700'
-                              : 'border-slate-200 bg-slate-50 text-slate-700'
-                          }`}
-                        >
-                          {tx.ownership.toUpperCase()}
-                        </span>
+                      <td className="py-3 px-3">
+                        {tx.isApproved ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded">
+                            <Lock className="w-3 h-3" />
+                            <span>APPROVED & LOCKED</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-900 rounded">
+                            <Unlock className="w-3 h-3" />
+                            <span>PENDING APPROVAL</span>
+                          </span>
+                        )}
                       </td>
 
-                      <td className="py-3 px-4 text-slate-700">{account?.name || '-'}</td>
+                      <td className="py-3 px-3 text-slate-700">{account?.name || '-'}</td>
 
-                      <td className="py-3 px-4 text-right font-mono font-bold whitespace-nowrap">
+                      <td className="py-3 px-3 text-right font-sans font-bold whitespace-nowrap">
                         <span className={isIncome ? 'text-emerald-700' : 'text-slate-900'}>
                           {isIncome ? '+' : '-'}{formatCurrency(tx.amount, userSettings.currencySymbol)}
                         </span>
                       </td>
 
-                      <td className="py-3 px-4 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={() => onEditTransaction(tx)}
-                            className="px-2 py-1 text-[10px] font-semibold text-sky-600 hover:bg-sky-50 rounded"
+                      <td className="py-3 px-3 text-center">
+                        {tx.isApproved ? (
+                          <span
+                            className="text-[10px] text-slate-400 italic font-semibold cursor-not-allowed"
+                            title="Locked with password. Cannot be edited or deleted."
                           >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => setConfirmTxId(tx.id)}
-                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded"
-                            title="Reverse Transaction"
-                          >
-                            <RotateCcw className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                            🔒 Locked
+                          </span>
+                        ) : (
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              onClick={() => onOpenApproveModal([tx.id])}
+                              className="px-2 py-1 text-[10px] font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded border border-emerald-200 cursor-pointer flex items-center gap-1"
+                              title="Approve this single entry with password"
+                            >
+                              <ShieldCheck className="w-3 h-3" />
+                              <span>Approve</span>
+                            </button>
+                            <button
+                              onClick={() => onEditTransaction(tx)}
+                              className="px-2 py-1 text-[10px] font-semibold text-sky-600 hover:bg-sky-50 rounded cursor-pointer"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => setConfirmTxId(tx.id)}
+                              className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer"
+                              title="Reverse Record"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
@@ -369,11 +459,12 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
         onConfirm={() => {
           if (confirmTxId) onReverseTransaction(confirmTxId);
         }}
-        title="Reverse Transaction Ledger Entry"
-        message="Reversing this transaction will exclude it from active cash flow, budget, and account balances while preserving its record in the audit trail."
+        title="Reverse Transaction Entry"
+        message="Reversing this unapproved record will exclude it from active totals."
         confirmLabel="Reverse Entry"
         isDanger={true}
       />
     </div>
   );
 };
+

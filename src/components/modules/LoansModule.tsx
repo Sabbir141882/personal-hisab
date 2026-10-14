@@ -90,14 +90,14 @@ export const LoansModule: React.FC<LoansModuleProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/40 space-y-1">
           <span className="text-xs font-semibold text-rose-800">Total Outstanding Liabilities (Owed by You)</span>
-          <p className="text-2xl font-bold font-mono text-rose-950">
+          <p className="text-2xl font-bold font-sans text-rose-950">
             {formatCurrency(totalLiabilities, userSettings.currencySymbol)}
           </p>
         </div>
 
         <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40 space-y-1">
           <span className="text-xs font-semibold text-emerald-800">Total Outstanding Receivables (Owed to You)</span>
-          <p className="text-2xl font-bold font-mono text-emerald-950">
+          <p className="text-2xl font-bold font-sans text-emerald-950">
             {formatCurrency(totalReceivables, userSettings.currencySymbol)}
           </p>
         </div>
@@ -146,9 +146,9 @@ export const LoansModule: React.FC<LoansModuleProps> = ({
                     </span>
                   </td>
                   <td className="py-3 px-4 text-slate-700">{d.counterparty}</td>
-                  <td className="py-3 px-4 font-mono">৳{d.originalAmount.toLocaleString()}</td>
-                  <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                    ৳{d.currentBalance.toLocaleString()}
+                  <td className="py-3 px-4 font-sans">BDT {d.originalAmount.toLocaleString()}</td>
+                  <td className="py-3 px-4 font-sans font-bold text-slate-900">
+                    BDT {d.currentBalance.toLocaleString()}
                   </td>
                   <td className="py-3 px-4 text-slate-600">{formatDate(d.dueDate)}</td>
                   <td className="py-3 px-4 text-center">
@@ -216,7 +216,7 @@ export const LoansModule: React.FC<LoansModuleProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Amount (৳) *</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Amount (BDT) *</label>
               <input
                 type="number"
                 step="0.01"
@@ -224,7 +224,7 @@ export const LoansModule: React.FC<LoansModuleProps> = ({
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-mono"
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-sans"
               />
             </div>
 
@@ -258,14 +258,14 @@ export const LoansModule: React.FC<LoansModuleProps> = ({
       <Modal isOpen={!!repayDebtId} onClose={() => setRepayDebtId(null)} title="Record Loan Repayment / Collection" maxWidth="sm">
         <form onSubmit={handleRepaySubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Repayment Amount (৳) *</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Repayment Amount (BDT) *</label>
             <input
               type="number"
               step="0.01"
               required
               value={repayAmount}
               onChange={(e) => setRepayAmount(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-mono"
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-sans"
             />
           </div>
 

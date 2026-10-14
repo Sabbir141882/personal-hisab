@@ -23,16 +23,16 @@ import {
 } from './sampleData';
 
 const STORAGE_KEYS = {
-  SETTINGS: 'myfinance_settings_v3',
-  ACCOUNTS: 'myfinance_accounts_v3',
-  CATEGORIES: 'myfinance_categories_v3',
-  TRANSACTIONS: 'myfinance_transactions_v3',
-  OFFICE_FUNDS: 'myfinance_office_funds_v3',
-  BUDGETS: 'myfinance_budgets_v3',
-  SAVINGS_GOALS: 'myfinance_savings_goals_v3',
-  DEBTS: 'myfinance_debts_v3',
-  RECURRING: 'myfinance_recurring_v3',
-  AUDIT_LOGS: 'myfinance_audit_logs_v3',
+  SETTINGS: 'myfinance_settings_v4',
+  ACCOUNTS: 'myfinance_accounts_v4',
+  CATEGORIES: 'myfinance_categories_v4',
+  TRANSACTIONS: 'myfinance_transactions_v4',
+  OFFICE_FUNDS: 'myfinance_office_funds_v4',
+  BUDGETS: 'myfinance_budgets_v4',
+  SAVINGS_GOALS: 'myfinance_savings_goals_v4',
+  DEBTS: 'myfinance_debts_v4',
+  RECURRING: 'myfinance_recurring_v4',
+  AUDIT_LOGS: 'myfinance_audit_logs_v4',
 };
 
 // Helper function to read from LocalStorage
@@ -55,14 +55,37 @@ const setStorageItem = <T>(key: string, value: T): void => {
   }
 };
 
-export const loadSettings = (): UserSettings =>
-  getStorageItem<UserSettings>(STORAGE_KEYS.SETTINGS, INITIAL_USER_SETTINGS);
+export const loadSettings = (): UserSettings => {
+  const settings = getStorageItem<UserSettings>(STORAGE_KEYS.SETTINGS, INITIAL_USER_SETTINGS);
+  let updated = false;
+  if (!settings.currencySymbol || settings.currencySymbol === '৳' || settings.currencySymbol.includes('৳')) {
+    settings.currencySymbol = 'BDT';
+    updated = true;
+  }
+  if (!settings.currency || (settings.currency as string) === '৳') {
+    settings.currency = 'BDT';
+    updated = true;
+  }
+  if (updated) {
+    setStorageItem(STORAGE_KEYS.SETTINGS, settings);
+  }
+  return settings;
+};
 
 export const saveSettings = (settings: UserSettings): void =>
-  setStorageItem(STORAGE_KEYS.SETTINGS, settings);
+  setStorageItem(STORAGE_KEYS.SETTINGS, {
+    ...settings,
+    currency: 'BDT',
+    currencySymbol: 'BDT',
+  });
 
-export const loadAccounts = (): Account[] =>
-  getStorageItem<Account[]>(STORAGE_KEYS.ACCOUNTS, INITIAL_ACCOUNTS);
+export const loadAccounts = (): Account[] => {
+  const accounts = getStorageItem<Account[]>(STORAGE_KEYS.ACCOUNTS, INITIAL_ACCOUNTS);
+  return accounts.map((acc) => ({
+    ...acc,
+    currency: 'BDT',
+  }));
+};
 
 export const saveAccounts = (accounts: Account[]): void =>
   setStorageItem(STORAGE_KEYS.ACCOUNTS, accounts);
@@ -74,37 +97,37 @@ export const saveCategories = (categories: Category[]): void =>
   setStorageItem(STORAGE_KEYS.CATEGORIES, categories);
 
 export const loadTransactions = (): Transaction[] =>
-  getStorageItem<Transaction[]>(STORAGE_KEYS.TRANSACTIONS, INITIAL_TRANSACTIONS);
+  getStorageItem<Transaction[]>(STORAGE_KEYS.TRANSACTIONS, []);
 
 export const saveTransactions = (transactions: Transaction[]): void =>
   setStorageItem(STORAGE_KEYS.TRANSACTIONS, transactions);
 
 export const loadOfficeFunds = (): OfficeFund[] =>
-  getStorageItem<OfficeFund[]>(STORAGE_KEYS.OFFICE_FUNDS, INITIAL_OFFICE_FUNDS);
+  getStorageItem<OfficeFund[]>(STORAGE_KEYS.OFFICE_FUNDS, []);
 
 export const saveOfficeFunds = (funds: OfficeFund[]): void =>
   setStorageItem(STORAGE_KEYS.OFFICE_FUNDS, funds);
 
 export const loadBudgets = (): Budget[] =>
-  getStorageItem<Budget[]>(STORAGE_KEYS.BUDGETS, INITIAL_BUDGETS);
+  getStorageItem<Budget[]>(STORAGE_KEYS.BUDGETS, []);
 
 export const saveBudgets = (budgets: Budget[]): void =>
   setStorageItem(STORAGE_KEYS.BUDGETS, budgets);
 
 export const loadSavingsGoals = (): SavingsGoal[] =>
-  getStorageItem<SavingsGoal[]>(STORAGE_KEYS.SAVINGS_GOALS, INITIAL_SAVINGS_GOALS);
+  getStorageItem<SavingsGoal[]>(STORAGE_KEYS.SAVINGS_GOALS, []);
 
 export const saveSavingsGoals = (goals: SavingsGoal[]): void =>
   setStorageItem(STORAGE_KEYS.SAVINGS_GOALS, goals);
 
 export const loadDebts = (): DebtReceivable[] =>
-  getStorageItem<DebtReceivable[]>(STORAGE_KEYS.DEBTS, INITIAL_DEBTS);
+  getStorageItem<DebtReceivable[]>(STORAGE_KEYS.DEBTS, []);
 
 export const saveDebts = (debts: DebtReceivable[]): void =>
   setStorageItem(STORAGE_KEYS.DEBTS, debts);
 
 export const loadRecurring = (): RecurringTransaction[] =>
-  getStorageItem<RecurringTransaction[]>(STORAGE_KEYS.RECURRING, INITIAL_RECURRING);
+  getStorageItem<RecurringTransaction[]>(STORAGE_KEYS.RECURRING, []);
 
 export const saveRecurring = (recurring: RecurringTransaction[]): void =>
   setStorageItem(STORAGE_KEYS.RECURRING, recurring);

@@ -141,7 +141,7 @@ export const RecurringModule: React.FC<RecurringModuleProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Amount (৳) *</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Amount (BDT) *</label>
               <input
                 type="number"
                 step="0.01"
@@ -149,7 +149,7 @@ export const RecurringModule: React.FC<RecurringModuleProps> = ({
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-mono"
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-sans"
               />
             </div>
           </div>

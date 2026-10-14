@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Account, Category, FinancialSummary, OfficeFund, Transaction, UserSettings } from '../types/finance';
-import { formatCurrency, formatDate } from './financialEngine';
+import { formatCurrency, formatDate, formatNumberOnly } from './financialEngine';
 
 export interface ReportPdfOptions {
   reportTitle: string;
@@ -34,17 +34,14 @@ export const generatePdfReport = (options: ReportPdfOptions): jsPDF => {
     format: 'a4',
   });
 
-  const currencySymbol = userSettings.currencySymbol || '৳';
+  const currencySymbol = userSettings.currencySymbol || 'BDT';
   const primaryColor: [number, number, number] = [15, 23, 42]; // dark slate #0f172a
-  const accentColor: [number, number, number] = [2, 132, 199]; // sky #0284c7
-
-  // Helper for text formatting
   const marginX = 14;
   let currentY = 16;
 
-  // Header Section
+  // Top Corporate Header Banner
   doc.setFillColor(...primaryColor);
-  doc.rect(0, 0, 210, 24, 'F');
+  doc.rect(0, 0, 210, 26, 'F');
 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
@@ -53,14 +50,14 @@ export const generatePdfReport = (options: ReportPdfOptions): jsPDF => {
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Official Financial Report — ${userSettings.userName}`, marginX, 18);
+  doc.text(`Official Executive Financial Statement — ${userSettings.userName}`, marginX, 19);
 
-  const timestampText = `Generated: ${new Date().toLocaleString('en-GB')}`;
-  doc.text(timestampText, 210 - marginX - doc.getTextWidth(timestampText), 18);
+  const timestampText = `Date: ${new Date().toLocaleDateString('en-GB')}`;
+  doc.text(timestampText, 210 - marginX - doc.getTextWidth(timestampText), 19);
 
-  currentY = 32;
+  currentY = 34;
 
-  // Report Title Block
+  // Report Title & Period
   doc.setTextColor(15, 23, 42);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
@@ -69,62 +66,85 @@ export const generatePdfReport = (options: ReportPdfOptions): jsPDF => {
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 116, 139);
-  doc.text(`Period: ${reportPeriodText}`, marginX, currentY + 5);
+  doc.text(`Reporting Period: ${reportPeriodText}`, marginX, currentY + 5);
 
   if (filtersText) {
-    doc.text(`Active Filters: ${filtersText}`, marginX, currentY + 10);
+    doc.text(`Active Scope: ${filtersText}`, marginX, currentY + 10);
     currentY += 5;
   }
 
-  currentY += 15;
+  currentY += 16;
 
-  // Key Financial Metrics Summary Cards (2x4 grid in PDF)
-  doc.setDrawColor(226, 232, 240);
-  doc.setFillColor(248, 250, 252);
+  // Summary Metrics Cards (Executive 2x2 Grid)
+  const cardWidth = 88;
+  const cardHeight = 20;
+  const cardGapX = 6;
+  const cardGapY = 4;
 
-  const cardWidth = 43;
-  const cardHeight = 16;
-  const cardGap = 3;
+  const formatPdfAmount = (amount: number): string => {
+    return `BDT ${formatNumberOnly(amount)}`;
+  };
 
-  const summaryMetrics = [
-    { label: 'Total Personal Income', value: formatCurrency(summary.totalPersonalIncome, currencySymbol) },
-    { label: 'Total Personal Exp', value: formatCurrency(summary.totalPersonalExpenses, currencySymbol) },
-    { label: 'Total Family Exp', value: formatCurrency(summary.totalFamilyExpenses, currencySymbol) },
-    { label: 'Net Personal Cashflow', value: formatCurrency(summary.netPersonalCashFlow, currencySymbol) },
-    { label: 'Office Funds Received', value: formatCurrency(summary.totalOfficeFundsReceived, currencySymbol) },
-    { label: 'Official Office Exp', value: formatCurrency(summary.totalOfficeExpenses, currencySymbol) },
-    { label: 'Personal Use (Office)', value: formatCurrency(summary.totalPersonalExpensesViaOffice, currencySymbol) },
-    { label: 'Unspent Office Funds', value: formatCurrency(summary.totalOfficeFundsUnspent, currencySymbol) },
+  const executiveMetrics = [
+    {
+      label: 'TOTAL PERSONAL INCOME',
+      value: formatPdfAmount(summary.totalPersonalIncome),
+      bgColor: [240, 253, 244] as [number, number, number], // soft emerald
+      borderColor: [187, 247, 208] as [number, number, number],
+      textColor: [6, 78, 59] as [number, number, number],
+    },
+    {
+      label: 'TOTAL PERSONAL EXPENSES',
+      value: formatPdfAmount(summary.totalPersonalExpenses),
+      bgColor: [254, 242, 242] as [number, number, number], // soft rose
+      borderColor: [254, 202, 202] as [number, number, number],
+      textColor: [136, 19, 55] as [number, number, number],
+    },
+    {
+      label: 'TOTAL FAMILY EXPENSES',
+      value: formatPdfAmount(summary.totalFamilyExpenses),
+      bgColor: [255, 251, 235] as [number, number, number], // soft amber
+      borderColor: [253, 230, 138] as [number, number, number],
+      textColor: [120, 53, 15] as [number, number, number],
+    },
+    {
+      label: 'TOTAL NET CASH & BANK BALANCE',
+      value: formatPdfAmount(summary.totalCashAndBankBalances),
+      bgColor: [240, 249, 255] as [number, number, number], // soft sky
+      borderColor: [186, 230, 253] as [number, number, number],
+      textColor: [12, 74, 110] as [number, number, number],
+    },
   ];
 
-  summaryMetrics.forEach((m, idx) => {
-    const col = idx % 4;
-    const row = Math.floor(idx / 4);
-    const x = marginX + col * (cardWidth + cardGap);
-    const y = currentY + row * (cardHeight + cardGap);
+  executiveMetrics.forEach((m, idx) => {
+    const col = idx % 2;
+    const row = Math.floor(idx / 2);
+    const x = marginX + col * (cardWidth + cardGapX);
+    const y = currentY + row * (cardHeight + cardGapY);
 
-    doc.setFillColor(248, 250, 252);
-    doc.setDrawColor(226, 232, 240);
-    doc.roundedRect(x, y, cardWidth, cardHeight, 1.5, 1.5, 'FD');
+    doc.setFillColor(...m.bgColor);
+    doc.setDrawColor(...m.borderColor);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(x, y, cardWidth, cardHeight, 2, 2, 'FD');
 
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 116, 139);
-    doc.text(m.label, x + 2, y + 5);
-
-    doc.setFontSize(8.5);
+    doc.setFontSize(7.5);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(15, 23, 42);
-    doc.text(m.value, x + 2, y + 11);
+    doc.setTextColor(100, 116, 139);
+    doc.text(m.label, x + 4, y + 6);
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...m.textColor);
+    doc.text(m.value, x + 4, y + 14);
   });
 
-  currentY += 2 * (cardHeight + cardGap) + 8;
+  currentY += 2 * (cardHeight + cardGapY) + 8;
 
-  // Transactions Detailed Table
+  // Transactions Ledger Table
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(15, 23, 42);
-  doc.text('Detailed Ledger Records', marginX, currentY);
+  doc.text('Detailed Financial Ledger Records', marginX, currentY);
 
   currentY += 4;
 
@@ -132,11 +152,7 @@ export const generatePdfReport = (options: ReportPdfOptions): jsPDF => {
     const acc = accounts.find((a) => a.id === tx.sourceAccountId);
     const cat = categories.find((c) => c.id === tx.categoryId);
 
-    // Format transaction type display
-    let typeLabel = tx.type.replace(/_/g, ' ').toUpperCase();
-    if (tx.type === 'personal_expense_via_office') {
-      typeLabel = 'PERS VIA OFFICE';
-    }
+    const typeLabel = tx.type.replace(/_/g, ' ').toUpperCase();
 
     return [
       formatDate(tx.date),
@@ -144,39 +160,41 @@ export const generatePdfReport = (options: ReportPdfOptions): jsPDF => {
       cat?.name || 'Uncategorized',
       typeLabel,
       acc?.name || 'Account',
-      formatCurrency(tx.amount, currencySymbol),
+      formatNumberOnly(tx.amount),
       tx.ownership.toUpperCase(),
-      tx.status.toUpperCase(),
+      tx.isApproved ? 'APPROVED' : 'PENDING',
     ];
   });
 
   autoTable(doc, {
     startY: currentY,
-    head: [['Date', 'Payee / Party', 'Category', 'Type', 'Account', 'Amount', 'Owner', 'Status']],
+    head: [['Date', 'Payee / Counterparty', 'Category', 'Type', 'Account', 'Amount', 'Owner', 'Status']],
     body: tableRows,
-    theme: 'striped',
+    theme: 'grid',
     headStyles: {
       fillColor: primaryColor,
       textColor: [255, 255, 255],
       fontSize: 8,
       fontStyle: 'bold',
+      halign: 'left',
     },
     bodyStyles: {
-      fontSize: 7.5,
-      textColor: [30, 41, 59],
+      fontSize: 8,
+      textColor: [15, 23, 42],
+      fontStyle: 'normal',
     },
     alternateRowStyles: {
       fillColor: [248, 250, 252],
     },
     columnStyles: {
-      0: { cellWidth: 20 }, // Date
-      1: { cellWidth: 32 }, // Payee
+      0: { cellWidth: 22 }, // Date
+      1: { cellWidth: 34 }, // Payee
       2: { cellWidth: 32 }, // Category
-      3: { cellWidth: 28 }, // Type
-      4: { cellWidth: 28 }, // Account
-      5: { cellWidth: 24, halign: 'right' }, // Amount
+      3: { cellWidth: 26 }, // Type
+      4: { cellWidth: 26 }, // Account
+      5: { cellWidth: 26, halign: 'right', fontStyle: 'bold' }, // Amount
       6: { cellWidth: 16, halign: 'center' }, // Owner
-      7: { cellWidth: 16, halign: 'center' }, // Status
+      7: { cellWidth: 18, halign: 'center' }, // Status
     },
     didDrawPage: (data) => {
       // Footer on every page
@@ -188,7 +206,7 @@ export const generatePdfReport = (options: ReportPdfOptions): jsPDF => {
       doc.setTextColor(148, 163, 184);
 
       doc.text(
-        `My Finance Ledger Report | Page ${data.pageNumber} of ${pageCount}`,
+        `My Finance Executive Report | Page ${data.pageNumber} of ${pageCount}`,
         marginX,
         pageHeight - 8
       );

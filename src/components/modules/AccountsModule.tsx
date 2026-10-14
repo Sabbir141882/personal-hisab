@@ -107,7 +107,7 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
       <div className="p-4 rounded-xl border border-sky-200 bg-sky-50/40 flex items-center justify-between">
         <div>
           <span className="text-xs font-semibold text-sky-800">Total Active Cash & Bank Balances</span>
-          <p className="text-2xl font-bold font-mono text-sky-950 mt-0.5">
+          <p className="text-2xl font-bold font-sans text-sky-950 mt-0.5">
             {formatCurrency(totalBalance, userSettings.currencySymbol)}
           </p>
         </div>
@@ -118,49 +118,80 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
 
       {/* Account Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {accounts.map((acc) => (
-          <div key={acc.id} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <h3 className="font-bold text-slate-900 text-sm">{acc.name}</h3>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">
-                  {acc.type} {acc.accountNumber && `· ${acc.accountNumber}`}
+        {accounts.map((acc) => {
+          const isBank = acc.type === 'bank' || acc.name.toLowerCase().includes('bank');
+          const isBkash = acc.type === 'bkash' || acc.name.toLowerCase().includes('bkash');
+          const isCash = acc.type === 'cash' || acc.name.toLowerCase().includes('cash');
+
+          let cardBg = 'bg-white border-slate-200';
+          let iconBg = 'bg-slate-100 text-slate-700';
+          let titleColor = 'text-slate-900';
+          let balanceColor = 'text-slate-900';
+          let badgeBg = acc.isOfficeAccount ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700';
+
+          if (isBank) {
+            cardBg = 'bg-emerald-50/80 border-emerald-200 hover:border-emerald-300';
+            iconBg = 'bg-emerald-100 text-emerald-800';
+            titleColor = 'text-emerald-950';
+            balanceColor = 'text-emerald-900';
+            if (!acc.isOfficeAccount) badgeBg = 'bg-emerald-600 text-white font-bold';
+          } else if (isBkash) {
+            cardBg = 'bg-pink-50/80 border-pink-200 hover:border-pink-300';
+            iconBg = 'bg-[#E2136E]/10 text-[#E2136E]';
+            titleColor = 'text-[#9E0B46]';
+            balanceColor = 'text-[#D12053]';
+            if (!acc.isOfficeAccount) badgeBg = 'bg-[#E2136E] text-white font-bold';
+          } else if (isCash) {
+            cardBg = 'bg-amber-50/80 border-amber-200 hover:border-amber-300';
+            iconBg = 'bg-amber-100 text-amber-800';
+            titleColor = 'text-amber-950';
+            balanceColor = 'text-amber-900';
+            if (!acc.isOfficeAccount) badgeBg = 'bg-amber-600 text-white font-bold';
+          }
+
+          return (
+            <div key={acc.id} className={`rounded-2xl border p-5 shadow-xs space-y-3 transition-all ${cardBg}`}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className={`p-2 rounded-xl ${iconBg}`}>
+                    {isCash ? <Wallet className="w-4 h-4" /> : <CreditCard className="w-4 h-4" />}
+                  </div>
+                  <div>
+                    <h3 className={`font-bold text-sm ${titleColor}`}>{acc.name}</h3>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">
+                      {acc.type} {acc.accountNumber && `· ${acc.accountNumber}`}
+                    </p>
+                  </div>
+                </div>
+                <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${badgeBg}`}>
+                  {acc.isOfficeAccount ? 'OFFICE WALLET' : 'PERSONAL'}
+                </span>
+              </div>
+
+              <div className="py-2 border-y border-slate-200/60">
+                <span className="text-[10px] text-slate-500 uppercase font-semibold">Current Balance</span>
+                <p className={`text-xl font-bold font-sans tracking-tight tabular-nums mt-0.5 ${balanceColor}`}>
+                  {formatCurrency(acc.currentBalance, userSettings.currencySymbol)}
                 </p>
               </div>
-              <span
-                className={`text-[9px] font-bold px-2 py-0.5 rounded ${
-                  acc.isOfficeAccount
-                    ? 'bg-purple-100 text-purple-800'
-                    : 'bg-emerald-100 text-emerald-800'
-                }`}
-              >
-                {acc.isOfficeAccount ? 'OFFICE WALLET' : 'PERSONAL'}
-              </span>
-            </div>
 
-            <div className="py-2 border-y border-slate-100">
-              <span className="text-[10px] text-slate-400 uppercase font-semibold">Current Balance</span>
-              <p className="text-xl font-bold font-mono text-slate-900 mt-0.5">
-                {formatCurrency(acc.currentBalance, userSettings.currencySymbol)}
-              </p>
+              <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
+                <span>Opening: BDT {acc.openingBalance.toLocaleString()}</span>
+                <button
+                  onClick={() => {
+                    setAdjustAccountId(acc.id);
+                    setAdjustBalanceVal(String(acc.currentBalance));
+                    setIsAdjustModalOpen(true);
+                  }}
+                  className="text-xs font-semibold text-sky-600 hover:text-sky-700 flex items-center gap-1 cursor-pointer"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Reconcile</span>
+                </button>
+              </div>
             </div>
-
-            <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-              <span>Opening: ৳{acc.openingBalance.toLocaleString()}</span>
-              <button
-                onClick={() => {
-                  setAdjustAccountId(acc.id);
-                  setAdjustBalanceVal(String(acc.currentBalance));
-                  setIsAdjustModalOpen(true);
-                }}
-                className="text-xs font-semibold text-sky-600 hover:text-sky-700 flex items-center gap-1 cursor-pointer"
-              >
-                <RefreshCw className="w-3 h-3" />
-                <span>Reconcile</span>
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Add Account Modal */}
@@ -201,13 +232,13 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Opening Balance (৳)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Opening Balance (BDT)</label>
               <input
                 type="number"
                 step="0.01"
                 value={openingBalance}
                 onChange={(e) => setOpeningBalance(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono"
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-sans"
               />
             </div>
           </div>
@@ -264,14 +295,14 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
       >
         <form onSubmit={handleAdjustSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">New Reconciled Balance (৳) *</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">New Reconciled Balance (BDT) *</label>
             <input
               type="number"
               step="0.01"
               required
               value={adjustBalanceVal}
               onChange={(e) => setAdjustBalanceVal(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-mono"
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-sans"
             />
           </div>
 

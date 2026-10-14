@@ -63,10 +63,10 @@ export const TestingQAModule: React.FC<TestingQAModuleProps> = ({
         if (t.id === 2) {
           // Verify office funds are excluded from personal income
           pass = calcSummary.totalPersonalIncome > 0 && calcSummary.totalOfficeFundsReceived > 0;
-          note = `Verified: Office Fund Received (৳${calcSummary.totalOfficeFundsReceived.toLocaleString()}) is NOT added to Personal Income (৳${calcSummary.totalPersonalIncome.toLocaleString()}).`;
+          note = `Verified: Office Fund Received (BDT ${calcSummary.totalOfficeFundsReceived.toLocaleString()}) is NOT added to Personal Income (BDT ${calcSummary.totalPersonalIncome.toLocaleString()}).`;
         } else if (t.id === 4 && ctgSettlement) {
           pass = ctgSettlement.personalUse === 2500;
-          note = `Verified: Personal use of office funds (৳${ctgSettlement.personalUse.toLocaleString()}) is flagged in settlement summary.`;
+          note = `Verified: Personal use of office funds (BDT ${ctgSettlement.personalUse.toLocaleString()}) is flagged in settlement summary.`;
         } else if (t.id === 7) {
           // Account transfers do not inflate net cash flow
           pass = true;

@@ -78,7 +78,7 @@ export const OfficeFundModal: React.FC<OfficeFundModalProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Amount Received (BDT / ৳) *
+              Amount Received (BDT) *
             </label>
             <input
               type="number"
@@ -87,7 +87,7 @@ export const OfficeFundModal: React.FC<OfficeFundModalProps> = ({
               placeholder="0.00"
               value={amountReceived}
               onChange={(e) => setAmountReceived(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-mono focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold font-sans focus:ring-2 focus:ring-purple-500 focus:outline-none"
             />
           </div>
 
