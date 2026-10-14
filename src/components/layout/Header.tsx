@@ -18,7 +18,6 @@ const moduleTitles: Record<ModuleId, { title: string; subtitle: string }> = {
   expense: { title: 'Expense Management', subtitle: 'Personal and family consumption expense management' },
   office_fund: { title: 'Office Fund Management', subtitle: 'Employer advance funds and official office expenses' },
   accounts: { title: 'Accounts & Wallets', subtitle: 'Cash in hand, bank accounts, bKash, Nagad, and mobile wallets' },
-  transfers: { title: 'Account Transfers', subtitle: 'Inter-account liquidity movement with cashout fee accounting' },
   categories: { title: 'Categories & Subcategories', subtitle: 'Customizable hierarchy of income and expense categories' },
   budgets: { title: 'Monthly Budgets', subtitle: 'Category-wise spending limits and budget utilization alerts' },
   savings: { title: 'Savings & Financial Goals', subtitle: 'Target savings reserves, DPS, and purchase goal tracking' },

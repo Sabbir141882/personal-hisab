@@ -27,7 +27,6 @@ export type ModuleId =
   | 'expense'
   | 'office_fund'
   | 'accounts'
-  | 'transfers'
   | 'categories'
   | 'budgets'
   | 'savings'
@@ -55,7 +54,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'dashboard' as ModuleId, label: 'Dashboard', icon: LayoutDashboard },
         { id: 'transactions' as ModuleId, label: 'Transactions Ledger', icon: Receipt },
         { id: 'accounts' as ModuleId, label: 'Accounts & Wallets', icon: Wallet },
-        { id: 'transfers' as ModuleId, label: 'Account Transfers', icon: ArrowLeftRight },
       ],
     },
     {

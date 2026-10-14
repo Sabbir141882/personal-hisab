@@ -412,14 +412,12 @@ export function App() {
         );
 
       case 'accounts':
-      case 'transfers':
         return (
           <AccountsModule
             accounts={calculatedAccounts}
             transactions={transactions}
             userSettings={userSettings}
             onSaveAccount={handleSaveAccount}
-            onAdjustBalance={handleAdjustAccountBalance}
             onOpenTransferModal={() => setIsTransferModalOpen(true)}
           />
         );
