@@ -90,8 +90,69 @@ export const loadAccounts = (): Account[] => {
 export const saveAccounts = (accounts: Account[]): void =>
   setStorageItem(STORAGE_KEYS.ACCOUNTS, accounts);
 
-export const loadCategories = (): Category[] =>
-  getStorageItem<Category[]>(STORAGE_KEYS.CATEGORIES, INITIAL_CATEGORIES);
+export const loadCategories = (): Category[] => {
+  const stored = getStorageItem<Category[]>(STORAGE_KEYS.CATEGORIES, []);
+  if (!stored || stored.length === 0) {
+    setStorageItem(STORAGE_KEYS.CATEGORIES, INITIAL_CATEGORIES);
+    return INITIAL_CATEGORIES;
+  }
+
+  let modified = false;
+  const merged = [...stored];
+
+  for (const initCat of INITIAL_CATEGORIES) {
+    const existingIndex = merged.findIndex(
+      (c) =>
+        c.name.trim().toLowerCase() === initCat.name.trim().toLowerCase() ||
+        c.id === initCat.id
+    );
+
+    if (existingIndex === -1) {
+      merged.push(initCat);
+      modified = true;
+    } else {
+      // Update name if needed (e.g., exact casing from instruction) and merge missing subcategories
+      const existingCat = merged[existingIndex];
+      let catModified = false;
+      const existingSubs = existingCat.subcategories || [];
+      const updatedSubs = [...existingSubs];
+
+      if (existingCat.name !== initCat.name) {
+        existingCat.name = initCat.name;
+        catModified = true;
+      }
+
+      if (initCat.subcategories) {
+        for (const initSub of initCat.subcategories) {
+          const subExists = updatedSubs.some(
+            (s) => s.name.trim().toLowerCase() === initSub.name.trim().toLowerCase()
+          );
+          if (!subExists) {
+            updatedSubs.push({
+              ...initSub,
+              categoryId: existingCat.id,
+            });
+            catModified = true;
+          }
+        }
+      }
+
+      if (catModified) {
+        merged[existingIndex] = {
+          ...existingCat,
+          subcategories: updatedSubs,
+        };
+        modified = true;
+      }
+    }
+  }
+
+  if (modified) {
+    setStorageItem(STORAGE_KEYS.CATEGORIES, merged);
+  }
+
+  return merged;
+};
 
 export const saveCategories = (categories: Category[]): void =>
   setStorageItem(STORAGE_KEYS.CATEGORIES, categories);

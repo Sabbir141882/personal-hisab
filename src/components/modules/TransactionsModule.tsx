@@ -20,6 +20,7 @@ import {
   OfficeFund,
   Transaction,
   UserSettings,
+  formatTransactionType,
 } from '../../types/finance';
 import { filterTransactions, formatCurrency, formatDate } from '../../services/financialEngine';
 import { exportTransactionsToCsv } from '../../services/csvExporter';
@@ -191,13 +192,23 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
               className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
             >
               <option value="all">All Types</option>
-              <option value="salary_income">Salary Income</option>
-              <option value="personal_income">Personal Income</option>
-              <option value="office_fund_received">Office Fund Advance</option>
-              <option value="office_expense">Official Office Exp</option>
+              <option value="salary_income">Income</option>
               <option value="personal_expense">Personal Expense</option>
               <option value="family_expense">Family Expense</option>
-              <option value="account_transfer">Account Transfer</option>
+              <option value="baby_expense">Baby Expense</option>
+              <option value="mobile_expense">Mobile Expense</option>
+              <option value="office_fund_received">Office Money Received</option>
+              <option value="office_expense">Office Expense</option>
+              <option value="office_fund_returned">Office Money Return</option>
+              <option value="receivable_collection">Money Received</option>
+              <option value="loan_issued">Money Given</option>
+              <option value="account_transfer">Money Transfer</option>
+              <option value="savings_contribution">Savings</option>
+              <option value="investment">Investment</option>
+              <option value="loan_received">Loan Received</option>
+              <option value="loan_given">Loan Given</option>
+              <option value="debt_repayment">Loan Repayment</option>
+              <option value="other_expense">Other Expense</option>
             </select>
           </div>
 
@@ -355,7 +366,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                               : 'bg-slate-100 text-slate-700'
                           }`}
                         >
-                          {tx.type.replace(/_/g, ' ').toUpperCase()}
+                          {formatTransactionType(tx.type).toUpperCase()}
                         </span>
                       </td>
 

@@ -38,25 +38,77 @@ export interface Category {
 }
 
 export type TransactionType =
+  | 'income'
   | 'personal_income'
   | 'salary_income'
   | 'additional_income'
-  | 'office_fund_received'
-  | 'office_expense'
   | 'personal_expense'
   | 'family_expense'
-  | 'personal_expense_via_office'
+  | 'baby_expense'
+  | 'mobile_expense'
+  | 'office_fund_received'
+  | 'office_money_received'
+  | 'office_expense'
+  | 'office_fund_returned'
+  | 'office_money_returned'
+  | 'money_received'
+  | 'money_given'
   | 'account_transfer'
+  | 'money_transfer'
   | 'savings_contribution'
-  | 'savings_withdrawal'
+  | 'savings'
+  | 'investment'
   | 'loan_received'
   | 'loan_issued'
+  | 'loan_given'
   | 'debt_repayment'
+  | 'loan_repayment'
+  | 'other_expense'
+  | 'personal_expense_via_office'
+  | 'savings_withdrawal'
   | 'receivable_collection'
   | 'refund'
-  | 'office_fund_returned'
   | 'opening_balance_adjustment'
   | 'reimbursement';
+
+export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
+  income: 'Income',
+  personal_income: 'Income',
+  salary_income: 'Income',
+  additional_income: 'Income',
+  personal_expense: 'Personal Expense',
+  family_expense: 'Family Expense',
+  baby_expense: 'Baby Expense',
+  mobile_expense: 'Mobile Expense',
+  office_fund_received: 'Office Money Received',
+  office_money_received: 'Office Money Received',
+  office_expense: 'Office Expense',
+  office_fund_returned: 'Office Money Return',
+  office_money_returned: 'Office Money Return',
+  money_received: 'Money Received',
+  receivable_collection: 'Money Received',
+  money_given: 'Money Given',
+  loan_issued: 'Money Given',
+  account_transfer: 'Money Transfer',
+  money_transfer: 'Money Transfer',
+  savings_contribution: 'Savings',
+  savings: 'Savings',
+  investment: 'Investment',
+  loan_received: 'Loan Received',
+  loan_given: 'Loan Given',
+  debt_repayment: 'Loan Repayment',
+  loan_repayment: 'Loan Repayment',
+  other_expense: 'Other Expense',
+  personal_expense_via_office: 'Personal Expense (via Office)',
+  savings_withdrawal: 'Savings Withdrawal',
+  refund: 'Refund Received',
+  reimbursement: 'Reimbursement',
+  opening_balance_adjustment: 'Opening Balance Adjustment',
+};
+
+export const formatTransactionType = (type: string): string => {
+  return TRANSACTION_TYPE_LABELS[type] || type.replace(/_/g, ' ');
+};
 
 export type FinancialOwnership = 'personal' | 'office' | 'family';
 

@@ -144,7 +144,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
       fee: parseFloat(fee) || 0,
       sourceAccountId,
       destinationAccountId: destinationAccountId || undefined,
-      categoryId: categoryId || categories[0]?.id || 'cat_food_groceries',
+      categoryId: categoryId || categories[0]?.id || 'cat_family_expense',
       subcategoryId: subcategoryId || undefined,
       payeePayer: payeePayer || (type.includes('income') ? 'Employer/Client' : 'Vendor'),
       description,
@@ -184,35 +184,23 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             onChange={(e) => handleTypeChange(e.target.value as TransactionType)}
             className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-sky-500 focus:outline-none"
           >
-            <optgroup label="Income Types">
-              <option value="salary_income">Salary & Bonus Income</option>
-              <option value="personal_income">Personal Regular Income</option>
-              <option value="additional_income">Additional / Freelance Income</option>
-              <option value="refund">Refund Received</option>
-            </optgroup>
-            <optgroup label="Office Fund Ledger (CRITICAL)">
-              <option value="office_fund_received">Office Fund Advance Received (From Employer)</option>
-              <option value="office_expense">Official Office Expense (Work Purpose)</option>
-              <option value="personal_expense_via_office">
-                Personal Expense Paid via Office Funds (Tracked in Settlement)
-              </option>
-              <option value="office_fund_returned">Unspent Office Fund Returned to Employer</option>
-            </optgroup>
-            <optgroup label="Expense Types">
-              <option value="personal_expense">Personal Consumption Expense</option>
-              <option value="family_expense">Family & Household Expense</option>
-            </optgroup>
-            <optgroup label="Transfers & Liquidity">
-              <option value="account_transfer">Account Transfer (e.g. Bank to bKash)</option>
-              <option value="savings_contribution">Savings Contribution (DPS / Reserve)</option>
-              <option value="savings_withdrawal">Savings Withdrawal</option>
-            </optgroup>
-            <optgroup label="Loans & Liabilities">
-              <option value="loan_received">Loan Received (Borrowed)</option>
-              <option value="loan_issued">Loan Issued (Lent to someone)</option>
-              <option value="debt_repayment">Debt Repayment</option>
-              <option value="receivable_collection">Receivable Collection</option>
-            </optgroup>
+            <option value="salary_income">1. Income — (টাকা আয়)</option>
+            <option value="personal_expense">2. Personal Expense — (ব্যক্তিগত খরচ)</option>
+            <option value="family_expense">3. Family Expense — (পরিবারের খরচ)</option>
+            <option value="baby_expense">4. Baby Expense — (বাচ্চার খরচ)</option>
+            <option value="mobile_expense">5. Mobile Expense — (মোবাইলের খরচ)</option>
+            <option value="office_fund_received">6. Office Money Received — (অফিস থেকে টাকা নেওয়া)</option>
+            <option value="office_expense">7. Office Expense — (অফিসের কাজের খরচ)</option>
+            <option value="office_fund_returned">8. Office Money Return — (অফিসে টাকা ফেরত)</option>
+            <option value="receivable_collection">9. Money Received — (টাকা পাওয়া)</option>
+            <option value="loan_issued">10. Money Given — (টাকা দেওয়া)</option>
+            <option value="account_transfer">11. Money Transfer — (এক অ্যাকাউন্ট থেকে অন্য অ্যাকাউন্টে)</option>
+            <option value="savings_contribution">12. Savings — (সঞ্চয়)</option>
+            <option value="investment">13. Investment — (বিনিযোগ)</option>
+            <option value="loan_received">14. Loan Received — (ধার নেওয়া)</option>
+            <option value="loan_given">15. Loan Given — (ধার দেওয়া)</option>
+            <option value="debt_repayment">16. Loan Repayment — (ধার পরিশোধ)</option>
+            <option value="other_expense">17. Other Expense — (অন্যান্য খরচ)</option>
           </select>
         </div>
 

@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Account, Category, FinancialSummary, OfficeFund, Transaction, UserSettings } from '../types/finance';
+import { Account, Category, FinancialSummary, OfficeFund, Transaction, UserSettings, formatTransactionType } from '../types/finance';
 import { formatCurrency, formatDate, formatNumberOnly } from './financialEngine';
 
 export interface ReportPdfOptions {
@@ -152,7 +152,7 @@ export const generatePdfReport = (options: ReportPdfOptions): jsPDF => {
     const acc = accounts.find((a) => a.id === tx.sourceAccountId);
     const cat = categories.find((c) => c.id === tx.categoryId);
 
-    const typeLabel = tx.type.replace(/_/g, ' ').toUpperCase();
+    const typeLabel = formatTransactionType(tx.type).toUpperCase();
 
     return [
       formatDate(tx.date),

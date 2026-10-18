@@ -51,7 +51,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
       fee: parseFloat(fee) || 0,
       sourceAccountId,
       destinationAccountId,
-      categoryId: 'cat_utilities',
+      categoryId: 'cat_family_expense',
       payeePayer: 'Self Transfer',
       description: description || 'Account Transfer',
       referenceNumber: referenceNumber || undefined,

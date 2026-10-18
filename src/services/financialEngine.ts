@@ -151,12 +151,15 @@ export const calculateAccountBalances = (
     const fee = tx.fee || 0;
 
     switch (tx.type) {
+      case 'income':
       case 'personal_income':
       case 'salary_income':
       case 'additional_income':
       case 'office_fund_received':
+      case 'office_money_received':
       case 'loan_received':
       case 'receivable_collection':
+      case 'money_received':
       case 'refund':
       case 'reimbursement': {
         const current = balanceMap.get(tx.sourceAccountId) || 0;
@@ -167,17 +170,27 @@ export const calculateAccountBalances = (
       case 'office_expense':
       case 'personal_expense':
       case 'family_expense':
+      case 'baby_expense':
+      case 'mobile_expense':
+      case 'other_expense':
       case 'personal_expense_via_office':
       case 'loan_issued':
+      case 'loan_given':
+      case 'money_given':
       case 'debt_repayment':
-      case 'office_fund_returned': {
+      case 'loan_repayment':
+      case 'office_fund_returned':
+      case 'office_money_returned': {
         const current = balanceMap.get(tx.sourceAccountId) || 0;
         balanceMap.set(tx.sourceAccountId, current - amount - fee);
         break;
       }
 
       case 'account_transfer':
+      case 'money_transfer':
       case 'savings_contribution':
+      case 'savings':
+      case 'investment':
       case 'savings_withdrawal': {
         // Decrease source
         const srcCurrent = balanceMap.get(tx.sourceAccountId) || 0;
@@ -234,16 +247,14 @@ export const calculateFinancialSummary = (
 
   filteredTxs.forEach((tx) => {
     switch (tx.type) {
+      case 'income':
       case 'salary_income':
-        totalSalaryIncome += tx.amount;
-        break;
-      case 'additional_income':
-        totalAdditionalIncome += tx.amount;
-        break;
       case 'personal_income':
+      case 'additional_income':
         totalOtherPersonalIncome += tx.amount;
         break;
       case 'office_fund_received':
+      case 'office_money_received':
         totalOfficeFundsReceived += tx.amount;
         break;
 
@@ -251,9 +262,12 @@ export const calculateFinancialSummary = (
         totalOfficeExpenses += tx.amount;
         break;
       case 'personal_expense':
+      case 'mobile_expense':
+      case 'other_expense':
         totalPersonalExpenses += tx.amount;
         break;
       case 'family_expense':
+      case 'baby_expense':
         totalFamilyExpenses += tx.amount;
         break;
       case 'personal_expense_via_office':
@@ -263,12 +277,16 @@ export const calculateFinancialSummary = (
         break;
 
       case 'savings_contribution':
+      case 'savings':
+      case 'investment':
         totalSavingsContributions += tx.amount;
         break;
       case 'debt_repayment':
+      case 'loan_repayment':
         totalDebtRepayments += tx.amount;
         break;
       case 'receivable_collection':
+      case 'money_received':
         totalReceivablesCollected += tx.amount;
         break;
       default:

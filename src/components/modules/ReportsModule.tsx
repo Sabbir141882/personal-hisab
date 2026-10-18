@@ -7,6 +7,7 @@ import {
   OfficeFund,
   Transaction,
   UserSettings,
+  formatTransactionType,
 } from '../../types/finance';
 import { calculateFinancialSummary, filterTransactions, formatCurrency, formatDate, formatNumberOnly } from '../../services/financialEngine';
 import { exportTransactionsToCsv } from '../../services/csvExporter';
@@ -262,7 +263,7 @@ export const ReportsModule: React.FC<ReportsModuleProps> = ({
                       <td className="py-3 px-4 text-slate-700">{category?.name || 'Uncategorized'}</td>
                       <td className="py-3 px-4">
                         <span className="px-2 py-0.5 bg-slate-100 text-slate-800 rounded text-[10px] font-bold">
-                          {tx.type.replace(/_/g, ' ').toUpperCase()}
+                          {formatTransactionType(tx.type).toUpperCase()}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-slate-600">{account?.name || '-'}</td>

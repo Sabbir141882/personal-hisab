@@ -1,4 +1,4 @@
-import { Account, Category, Transaction } from '../types/finance';
+import { Account, Category, Transaction, formatTransactionType } from '../types/finance';
 import { formatDate } from './financialEngine';
 
 const sanitizeCell = (text: string | number | undefined | null): string => {
@@ -48,7 +48,7 @@ export const exportTransactionsToCsv = (
       sanitizeCell(tx.id),
       sanitizeCell(formatDate(tx.date)),
       sanitizeCell(tx.time || ''),
-      sanitizeCell(tx.type),
+      sanitizeCell(formatTransactionType(tx.type)),
       sanitizeCell(tx.ownership),
       sanitizeCell(tx.payeePayer),
       sanitizeCell(category?.name || 'Uncategorized'),
