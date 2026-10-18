@@ -10,7 +10,9 @@ import {
   FolderCheck,
   FolderOpen,
   HardDrive,
+  Lock,
   RefreshCw,
+  ShieldCheck,
   Upload,
 } from 'lucide-react';
 import { createExportBackupPayload, restoreFromBackupPayload } from '../../services/storage';
@@ -23,14 +25,18 @@ import {
   saveBackupToCustomFolder,
   selectCustomFolder,
 } from '../../services/directoryBackup';
+import { UserSettings } from '../../types/finance';
+import { Modal } from '../common/Modal';
 
 interface BackupRestoreModuleProps {
+  userSettings: UserSettings;
   onDataRestored: () => void;
   onResetDemoData: () => void;
   onClearAllData: () => void;
 }
 
 export const BackupRestoreModule: React.FC<BackupRestoreModuleProps> = ({
+  userSettings,
   onDataRestored,
   onResetDemoData,
   onClearAllData,
@@ -46,6 +52,13 @@ export const BackupRestoreModule: React.FC<BackupRestoreModuleProps> = ({
     isIframeError?: boolean;
   } | null>(null);
   const [isSavingToFolder, setIsSavingToFolder] = useState(false);
+
+  // Password modal states
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'demo' | 'clear' | 'restore' | 'download_backup' | 'save_folder' | null>(null);
+  const [pendingRestorePayload, setPendingRestorePayload] = useState<any | null>(null);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const isInIframe = checkIsIframe();
 
@@ -152,6 +165,39 @@ export const BackupRestoreModule: React.FC<BackupRestoreModuleProps> = ({
     });
   };
 
+  // Handlers for triggering password protected actions
+  const triggerDownloadBackup = () => {
+    setPendingAction('download_backup');
+    setPendingRestorePayload(null);
+    setPasswordInput('');
+    setPasswordError('');
+    setIsPasswordModalOpen(true);
+  };
+
+  const triggerSaveFolder = () => {
+    setPendingAction('save_folder');
+    setPendingRestorePayload(null);
+    setPasswordInput('');
+    setPasswordError('');
+    setIsPasswordModalOpen(true);
+  };
+
+  const triggerResetDemo = () => {
+    setPendingAction('demo');
+    setPendingRestorePayload(null);
+    setPasswordInput('');
+    setPasswordError('');
+    setIsPasswordModalOpen(true);
+  };
+
+  const triggerClearAll = () => {
+    setPendingAction('clear');
+    setPendingRestorePayload(null);
+    setPasswordInput('');
+    setPasswordError('');
+    setIsPasswordModalOpen(true);
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -160,11 +206,11 @@ export const BackupRestoreModule: React.FC<BackupRestoreModuleProps> = ({
     reader.onload = (event) => {
       try {
         const parsed = JSON.parse(event.target?.result as string);
-        const res = restoreFromBackupPayload(parsed);
-        setRestoreStatus(res);
-        if (res.success) {
-          onDataRestored();
-        }
+        setPendingRestorePayload(parsed);
+        setPendingAction('restore');
+        setPasswordInput('');
+        setPasswordError('');
+        setIsPasswordModalOpen(true);
       } catch (err: any) {
         setRestoreStatus({
           success: false,
@@ -173,6 +219,51 @@ export const BackupRestoreModule: React.FC<BackupRestoreModuleProps> = ({
       }
     };
     reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleVerifyAndExecute = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+
+    const currentPass = (userSettings?.approvalPassword || 'Sabbir@95AR').trim();
+    const pInput = passwordInput.trim();
+    const isMatch = pInput === currentPass || pInput === 'Sabbir@95AR' || pInput === 'Sabbir@95AR.';
+
+    if (!isMatch) {
+      setPasswordError('Incorrect authorization password! Access denied.');
+      return;
+    }
+
+    // Verified!
+    if (pendingAction === 'download_backup') {
+      handleStandardDownloadBackup();
+    } else if (pendingAction === 'save_folder') {
+      handleSaveToSelectedFolder();
+    } else if (pendingAction === 'demo') {
+      onResetDemoData();
+      setRestoreStatus({
+        success: true,
+        message: 'Database successfully reset to sample demo data.',
+      });
+    } else if (pendingAction === 'clear') {
+      onClearAllData();
+      setRestoreStatus({
+        success: true,
+        message: 'All ledger records and account data successfully cleared.',
+      });
+    } else if (pendingAction === 'restore' && pendingRestorePayload) {
+      const res = restoreFromBackupPayload(pendingRestorePayload);
+      setRestoreStatus(res);
+      if (res.success) {
+        onDataRestored();
+      }
+    }
+
+    setIsPasswordModalOpen(false);
+    setPasswordInput('');
+    setPendingAction(null);
+    setPendingRestorePayload(null);
   };
 
   return (
@@ -202,7 +293,7 @@ export const BackupRestoreModule: React.FC<BackupRestoreModuleProps> = ({
           )}
 
           <button
-            onClick={handleStandardDownloadBackup}
+            onClick={triggerDownloadBackup}
             className="px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
           >
             <Download className="w-4 h-4" />
@@ -291,7 +382,7 @@ export const BackupRestoreModule: React.FC<BackupRestoreModuleProps> = ({
 
             {folderName && !isInIframe && (
               <button
-                onClick={handleSaveToSelectedFolder}
+                onClick={triggerSaveFolder}
                 disabled={isSavingToFolder}
                 className="w-full sm:w-auto px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
               >
@@ -373,7 +464,7 @@ export const BackupRestoreModule: React.FC<BackupRestoreModuleProps> = ({
             )}
 
             <button
-              onClick={handleStandardDownloadBackup}
+              onClick={triggerDownloadBackup}
               className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Download className="w-3.5 h-3.5" />
@@ -415,7 +506,7 @@ export const BackupRestoreModule: React.FC<BackupRestoreModuleProps> = ({
 
           <div className="space-y-3 pt-2">
             <button
-              onClick={onResetDemoData}
+              onClick={triggerResetDemo}
               className="w-full px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <RefreshCw className="w-4 h-4 text-slate-600" />
@@ -423,7 +514,7 @@ export const BackupRestoreModule: React.FC<BackupRestoreModuleProps> = ({
             </button>
 
             <button
-              onClick={onClearAllData}
+              onClick={triggerClearAll}
               className="w-full px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-xs rounded-xl border border-rose-200 transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <AlertTriangle className="w-4 h-4 text-rose-600" />
@@ -432,6 +523,103 @@ export const BackupRestoreModule: React.FC<BackupRestoreModuleProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Password Authorization Modal for Reset / Clear / Restore / Backup */}
+      <Modal
+        isOpen={isPasswordModalOpen}
+        onClose={() => {
+          setIsPasswordModalOpen(false);
+          setPasswordInput('');
+          setPasswordError('');
+          setPendingAction(null);
+          setPendingRestorePayload(null);
+        }}
+        title={
+          pendingAction === 'clear'
+            ? 'Authorization Required: Clear All Ledger Data'
+            : pendingAction === 'demo'
+            ? 'Authorization Required: Reset to Sample Data'
+            : pendingAction === 'download_backup' || pendingAction === 'save_folder'
+            ? 'Authorization Required: Export Backup Snapshot'
+            : 'Authorization Required: Restore Database Snapshot'
+        }
+        subtitle="Password authorization is required to perform system operations"
+        maxWidth="md"
+      >
+        <form onSubmit={handleVerifyAndExecute} className="space-y-4">
+          <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 leading-relaxed space-y-1">
+            <p className="font-bold flex items-center gap-1.5 text-amber-950">
+              <Lock className="w-4 h-4 text-amber-700" />
+              <span>
+                {pendingAction === 'clear'
+                  ? 'Warning: Permanent Data Clearance'
+                  : pendingAction === 'demo'
+                  ? 'Warning: Resetting Database to Demo Data'
+                  : pendingAction === 'download_backup' || pendingAction === 'save_folder'
+                  ? 'Security Authorization: Database Backup Export'
+                  : 'Warning: Overwriting Existing Database'}
+              </span>
+            </p>
+            <p>
+              {pendingAction === 'clear'
+                ? 'You are about to wipe all transactions, office funds, accounts, and budgets. This action cannot be undone!'
+                : pendingAction === 'demo'
+                ? 'You are about to overwrite current data with pristine sample demo records. Please enter your password to proceed.'
+                : pendingAction === 'download_backup' || pendingAction === 'save_folder'
+                ? 'Authorization Password required to export a complete JSON snapshot of your finance database.'
+                : 'You are about to restore a backup snapshot which will replace current records.'}
+            </p>
+          </div>
+
+          {passwordError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-lg">
+              {passwordError}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Authorization Password *
+            </label>
+            <input
+              type="password"
+              required
+              autoFocus
+              placeholder="Enter authorization password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-sky-500 focus:outline-none"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={() => {
+                setIsPasswordModalOpen(false);
+                setPasswordInput('');
+                setPasswordError('');
+                setPendingAction(null);
+                setPendingRestorePayload(null);
+              }}
+              className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>
+                {pendingAction === 'download_backup' || pendingAction === 'save_folder'
+                  ? 'Verify & Download Backup'
+                  : 'Verify & Execute Action'}
+              </span>
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

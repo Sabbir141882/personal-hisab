@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, Settings } from 'lucide-react';
+import { Lock, Save, Settings } from 'lucide-react';
 import { UserSettings } from '../../types/finance';
 
 interface SettingsModuleProps {
@@ -14,6 +14,7 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
   const [appName, setAppName] = useState(userSettings.appName || 'My Finance');
   const [userName, setUserName] = useState(userSettings.userName || 'Sabbir Ahmed');
   const [userEmail, setUserEmail] = useState(userSettings.userEmail || 'sabbir@myfinance.bd');
+  const [approvalPassword, setApprovalPassword] = useState(userSettings.approvalPassword || 'Sabbir@95AR');
   const [monthlySalary, setMonthlySalary] = useState(String(userSettings.monthlySalary || 0));
   const [salaryPayDay, setSalaryPayDay] = useState(String(userSettings.salaryPayDay || 1));
   const [salaryEmployer, setSalaryEmployer] = useState(userSettings.salaryEmployer || '');
@@ -28,6 +29,7 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
       appName,
       userName,
       userEmail,
+      approvalPassword: approvalPassword.trim() || 'Sabbir@95AR',
       monthlySalary: parseFloat(monthlySalary) || 0,
       salaryPayDay: parseInt(salaryPayDay) || 1,
       salaryEmployer,
@@ -102,7 +104,30 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
           </div>
         </div>
 
-        {/* Section 2: Salary Configuration */}
+        {/* Section 2: Password Security */}
+        <div className="space-y-4 pt-2">
+          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center gap-2">
+            <Lock className="w-4 h-4 text-sky-600" />
+            <span>2. Authorization Password Security</span>
+          </h3>
+          <p className="text-xs text-slate-500">
+            This password protects sensitive operations such as resetting data, clearing ledger entries, and locking transactions.
+          </p>
+
+          <div className="max-w-sm text-xs">
+            <label className="block font-semibold text-slate-700 mb-1">Authorization Password</label>
+            <input
+              type="password"
+              required
+              value={approvalPassword}
+              onChange={(e) => setApprovalPassword(e.target.value)}
+              placeholder="Enter authorization password"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono"
+            />
+          </div>
+        </div>
+
+        {/* Section 3: Salary Configuration */}
         <div className="space-y-4 pt-2">
           <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">
             3. Salary Profile Defaults

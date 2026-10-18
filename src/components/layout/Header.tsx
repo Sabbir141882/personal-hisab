@@ -7,7 +7,6 @@ interface HeaderProps {
   onOpenTxModal: (defaultType?: string) => void;
   onOpenOfficeModal: () => void;
   onOpenTransferModal: () => void;
-  onResetDemoData: () => void;
   setActiveModule: (m: ModuleId) => void;
 }
 
@@ -33,7 +32,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenTxModal,
   onOpenOfficeModal,
   onOpenTransferModal,
-  onResetDemoData,
   setActiveModule,
 }) => {
   const currentInfo = moduleTitles[activeModule] || { title: 'My Finance', subtitle: '' };
@@ -87,14 +85,6 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <ArrowLeftRight className="w-3.5 h-3.5" />
           <span>Transfer</span>
-        </button>
-
-        <button
-          onClick={onResetDemoData}
-          title="Reload Demo Data"
-          className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-        >
-          <RefreshCw className="w-4 h-4" />
         </button>
 
         <button

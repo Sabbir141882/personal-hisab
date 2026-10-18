@@ -24,7 +24,7 @@ export const INITIAL_USER_SETTINGS: UserSettings = {
   salaryEmployer: '',
   salaryAccountId: '',
   enableDemoData: false,
-  approvalPassword: 'Sabbir@95AR.',
+  approvalPassword: 'Sabbir@95AR',
 };
 
 export const INITIAL_ACCOUNTS: Account[] = [

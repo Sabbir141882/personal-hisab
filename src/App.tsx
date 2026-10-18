@@ -554,6 +554,7 @@ export function App() {
       case 'backup':
         return (
           <BackupRestoreModule
+            userSettings={userSettings}
             onDataRestored={refreshAllStateFromStorage}
             onResetDemoData={handleResetDemoData}
             onClearAllData={handleClearAllData}
@@ -602,7 +603,6 @@ export function App() {
           }}
           onOpenOfficeModal={() => setIsOfficeModalOpen(true)}
           onOpenTransferModal={() => setIsTransferModalOpen(true)}
-          onResetDemoData={handleResetDemoData}
           setActiveModule={setActiveModule}
         />
 
