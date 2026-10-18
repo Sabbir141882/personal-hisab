@@ -77,26 +77,29 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
     .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
     .slice(0, 6);
 
-  // Live Totals from Summary or Transactions
-  const totalIncome = summary.totalPersonalIncome > 0 ? summary.totalPersonalIncome : 28500;
-  const totalExpense = (summary.totalPersonalExpenses + summary.totalFamilyExpenses) > 0 
-    ? (summary.totalPersonalExpenses + summary.totalFamilyExpenses) 
-    : 18750;
-  const netBalance = summary.totalCashAndBankBalances > 0 ? summary.totalCashAndBankBalances : 9750;
+  // 100% PURE LIVE TOTALS FROM SUMMARY & TRANSACTIONS (NO FAKE FALLBACKS)
+  const totalIncome = summary.totalPersonalIncome || 0;
+  const totalExpense = summary.totalPersonalExpenses + summary.totalFamilyExpenses;
+  const netBalance = summary.totalCashAndBankBalances;
   
-  const officeFundReceived = summary.totalOfficeFundsReceived > 0 ? summary.totalOfficeFundsReceived : 12500;
-  const officeFundSpent = summary.totalOfficeExpenses > 0 ? summary.totalOfficeExpenses : 8200;
-  const officeFundRemaining = summary.totalOfficeFundsUnspent > 0 ? summary.totalOfficeFundsUnspent : 4300;
+  const officeFundReceived = summary.totalOfficeFundsReceived || 0;
+  const officeFundSpent = summary.totalOfficeExpenses || 0;
+  const officeFundRemaining = summary.totalOfficeFundsUnspent || 0;
   
-  const totalSavings = summary.totalSavingsContributions > 0 ? summary.totalSavingsContributions : 10000;
-  const totalInvestment = 5000;
+  const totalSavings = summary.totalSavingsContributions || 0;
+  
+  // Calculate total investments strictly from transactions of type 'investment'
+  const totalInvestment = completedTxs
+    .filter((t) => t.type === 'investment')
+    .reduce((acc, t) => acc + t.amount, 0);
+  
   const savingsAndInvest = totalSavings + totalInvestment;
 
-  const receiveAmt = summary.totalReceivablesOutstanding > 0 ? summary.totalReceivablesOutstanding : 18000;
-  const payAmt = summary.totalLiabilitiesOutstanding > 0 ? summary.totalLiabilitiesOutstanding : 17000;
+  const receiveAmt = summary.totalReceivablesOutstanding || 0;
+  const payAmt = summary.totalLiabilitiesOutstanding || 0;
   const loanTotal = receiveAmt + payAmt;
 
-  // Compute live Category Expense breakdown
+  // COMPUTE LIVE CATEGORY EXPENSE BREAKDOWN
   const categoryExpensesMap: Record<string, { name: string; amount: number; color: string }> = {};
   const defaultColors = ['#3B82F6', '#F97316', '#EC4899', '#8B5CF6', '#06B6D4', '#10B981', '#EAB308', '#64748B'];
 
@@ -114,29 +117,18 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
   });
 
   const categoryList = Object.values(categoryExpensesMap);
-  const liveExpenseTotal = categoryList.reduce((acc, c) => acc + c.amount, 0) || totalExpense;
+  const liveExpenseTotal = categoryList.reduce((acc, c) => acc + c.amount, 0);
 
-  const topExpenseCategories = categoryList.length > 0
-    ? categoryList
-        .sort((a, b) => b.amount - a.amount)
-        .map((c) => ({
-          name: c.name,
-          amount: c.amount,
-          color: c.color,
-          percent: Math.round((c.amount / liveExpenseTotal) * 100) || 0,
-        }))
-    : [
-        { name: 'Family Expense', amount: 5250, color: '#3B82F6', percent: 28 },
-        { name: 'Personal Expense', amount: 3400, color: '#F97316', percent: 18 },
-        { name: 'Baby Expense', amount: 2250, color: '#EC4899', percent: 12 },
-        { name: 'Mobile Expense', amount: 1800, color: '#8B5CF6', percent: 10 },
-        { name: 'Office Expense', amount: 1500, color: '#06B6D4', percent: 8 },
-        { name: 'Business Expense', amount: 1350, color: '#10B981', percent: 7 },
-        { name: 'Medical Expense', amount: 1200, color: '#EAB308', percent: 6 },
-        { name: 'Other Expense', amount: 1750, color: '#64748B', percent: 9 },
-      ];
+  const topExpenseCategories = categoryList
+    .sort((a, b) => b.amount - a.amount)
+    .map((c) => ({
+      name: c.name,
+      amount: c.amount,
+      color: c.color,
+      percent: liveExpenseTotal > 0 ? Math.round((c.amount / liveExpenseTotal) * 100) : 0,
+    }));
 
-  // Compute live Income Sources
+  // COMPUTE LIVE INCOME SOURCES
   let salarySum = 0;
   let businessSum = 0;
   let otherIncomeSum = 0;
@@ -154,18 +146,14 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
     }
   });
 
-  const liveIncomeTotal = salarySum + businessSum + otherIncomeSum || totalIncome;
-  const incomeSources = liveIncomeTotal > 0 && (salarySum > 0 || businessSum > 0 || otherIncomeSum > 0)
+  const liveIncomeTotal = salarySum + businessSum + otherIncomeSum;
+  const incomeSources = liveIncomeTotal > 0
     ? [
         { name: 'Salary Income', amount: salarySum, color: '#10B981', percent: Math.round((salarySum / liveIncomeTotal) * 100) },
         { name: 'Business Income', amount: businessSum, color: '#F97316', percent: Math.round((businessSum / liveIncomeTotal) * 100) },
         { name: 'Other Income', amount: otherIncomeSum, color: '#3B82F6', percent: Math.round((otherIncomeSum / liveIncomeTotal) * 100) },
-      ].filter((s) => s.amount > 0 || s.percent > 0)
-    : [
-        { name: 'Salary Income', amount: 15675, color: '#10B981', percent: 55 },
-        { name: 'Business Income', amount: 7980, color: '#F97316', percent: 28 },
-        { name: 'Other Income', amount: 4845, color: '#3B82F6', percent: 17 },
-      ];
+      ].filter((s) => s.amount > 0)
+    : [];
 
   // Dynamic monthly comparison data
   const monthlyComparison = [
@@ -749,35 +737,35 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
               <tbody className="divide-y divide-slate-100">
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">Total Income</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-emerald-600">{totalIncome.toLocaleString()}</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-emerald-600">৳ {totalIncome.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">Total Expense</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-rose-600">{totalExpense.toLocaleString()}</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-rose-600">৳ {totalExpense.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-bold text-slate-900">Net Balance</td>
-                  <td className="py-2.5 text-right font-extrabold font-mono text-sky-600">{netBalance.toLocaleString()}</td>
+                  <td className="py-2.5 text-right font-extrabold font-mono text-sky-600">৳ {netBalance.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">Cash in Hand</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-amber-600">{cashAccount ? cashAccount.currentBalance.toLocaleString() : '0'}</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-amber-600">৳ {cashAccount ? cashAccount.currentBalance.toLocaleString() : '0'}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">Office Fund Remaining</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-slate-800">{officeFundRemaining.toLocaleString()}</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-slate-800">৳ {officeFundRemaining.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">Total Savings & Investment</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-slate-800">{savingsAndInvest.toLocaleString()}</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-slate-800">৳ {savingsAndInvest.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">You will receive (Loan & Due)</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-emerald-600">{receiveAmt.toLocaleString()}</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-emerald-600">৳ {receiveAmt.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">You will pay (Loan & Due)</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-rose-600">{payAmt.toLocaleString()}</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-rose-600">৳ {payAmt.toLocaleString()}</td>
                 </tr>
               </tbody>
             </table>
