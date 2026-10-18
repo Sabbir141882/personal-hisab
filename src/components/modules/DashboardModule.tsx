@@ -68,29 +68,106 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
 
   const unapprovedTxs = transactions.filter((t) => t.status === 'completed' && !t.isApproved);
 
-  const recentTxs = [...transactions]
-    .filter((t) => t.status === 'completed')
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 5);
+  // Live Cash in Hand Account
+  const cashAccount = accounts.find((a) => a.type === 'cash' || a.name.toLowerCase().includes('cash')) || accounts[0];
 
-  // Totals & Calculations
-  const totalIncome = summary.totalPersonalIncome || 28500;
-  const totalExpense = (summary.totalPersonalExpenses + summary.totalFamilyExpenses) || 18750;
-  const netBalance = summary.totalCashAndBankBalances || 9750;
+  // Completed transactions list sorted latest first
+  const completedTxs = transactions.filter((t) => t.status === 'completed');
+  const recentTxs = [...completedTxs]
+    .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 6);
+
+  // Live Totals from Summary or Transactions
+  const totalIncome = summary.totalPersonalIncome > 0 ? summary.totalPersonalIncome : 28500;
+  const totalExpense = (summary.totalPersonalExpenses + summary.totalFamilyExpenses) > 0 
+    ? (summary.totalPersonalExpenses + summary.totalFamilyExpenses) 
+    : 18750;
+  const netBalance = summary.totalCashAndBankBalances > 0 ? summary.totalCashAndBankBalances : 9750;
   
-  const officeFundReceived = summary.totalOfficeFundsReceived || 12500;
-  const officeFundSpent = summary.totalOfficeExpenses || 8200;
-  const officeFundRemaining = summary.totalOfficeFundsUnspent || 4300;
+  const officeFundReceived = summary.totalOfficeFundsReceived > 0 ? summary.totalOfficeFundsReceived : 12500;
+  const officeFundSpent = summary.totalOfficeExpenses > 0 ? summary.totalOfficeExpenses : 8200;
+  const officeFundRemaining = summary.totalOfficeFundsUnspent > 0 ? summary.totalOfficeFundsUnspent : 4300;
   
-  const totalSavings = summary.totalSavingsContributions || 10000;
+  const totalSavings = summary.totalSavingsContributions > 0 ? summary.totalSavingsContributions : 10000;
   const totalInvestment = 5000;
   const savingsAndInvest = totalSavings + totalInvestment;
 
-  const receiveAmt = summary.totalReceivablesOutstanding || 18000;
-  const payAmt = summary.totalLiabilitiesOutstanding || 17000;
+  const receiveAmt = summary.totalReceivablesOutstanding > 0 ? summary.totalReceivablesOutstanding : 18000;
+  const payAmt = summary.totalLiabilitiesOutstanding > 0 ? summary.totalLiabilitiesOutstanding : 17000;
   const loanTotal = receiveAmt + payAmt;
 
-  // Monthly comparison mock data for Income vs Expense chart
+  // Compute live Category Expense breakdown
+  const categoryExpensesMap: Record<string, { name: string; amount: number; color: string }> = {};
+  const defaultColors = ['#3B82F6', '#F97316', '#EC4899', '#8B5CF6', '#06B6D4', '#10B981', '#EAB308', '#64748B'];
+
+  completedTxs.forEach((tx) => {
+    const isExpense = tx.type.includes('expense') || tx.type === 'office_expense' || tx.type === 'other_expense';
+    if (isExpense) {
+      const cat = categories.find((c) => c.id === tx.categoryId);
+      const catName = cat ? cat.name : 'Other Expense';
+      if (!categoryExpensesMap[catName]) {
+        const colorIdx = Object.keys(categoryExpensesMap).length % defaultColors.length;
+        categoryExpensesMap[catName] = { name: catName, amount: 0, color: cat?.color || defaultColors[colorIdx] };
+      }
+      categoryExpensesMap[catName].amount += tx.amount;
+    }
+  });
+
+  const categoryList = Object.values(categoryExpensesMap);
+  const liveExpenseTotal = categoryList.reduce((acc, c) => acc + c.amount, 0) || totalExpense;
+
+  const topExpenseCategories = categoryList.length > 0
+    ? categoryList
+        .sort((a, b) => b.amount - a.amount)
+        .map((c) => ({
+          name: c.name,
+          amount: c.amount,
+          color: c.color,
+          percent: Math.round((c.amount / liveExpenseTotal) * 100) || 0,
+        }))
+    : [
+        { name: 'Family Expense', amount: 5250, color: '#3B82F6', percent: 28 },
+        { name: 'Personal Expense', amount: 3400, color: '#F97316', percent: 18 },
+        { name: 'Baby Expense', amount: 2250, color: '#EC4899', percent: 12 },
+        { name: 'Mobile Expense', amount: 1800, color: '#8B5CF6', percent: 10 },
+        { name: 'Office Expense', amount: 1500, color: '#06B6D4', percent: 8 },
+        { name: 'Business Expense', amount: 1350, color: '#10B981', percent: 7 },
+        { name: 'Medical Expense', amount: 1200, color: '#EAB308', percent: 6 },
+        { name: 'Other Expense', amount: 1750, color: '#64748B', percent: 9 },
+      ];
+
+  // Compute live Income Sources
+  let salarySum = 0;
+  let businessSum = 0;
+  let otherIncomeSum = 0;
+
+  completedTxs.forEach((tx) => {
+    const isIncome = tx.type.includes('income') || tx.type === 'office_fund_received' || tx.type === 'money_received';
+    if (isIncome) {
+      if (tx.type === 'salary_income' || tx.description.toLowerCase().includes('salary')) {
+        salarySum += tx.amount;
+      } else if (tx.type === 'additional_income' || tx.description.toLowerCase().includes('business')) {
+        businessSum += tx.amount;
+      } else {
+        otherIncomeSum += tx.amount;
+      }
+    }
+  });
+
+  const liveIncomeTotal = salarySum + businessSum + otherIncomeSum || totalIncome;
+  const incomeSources = liveIncomeTotal > 0 && (salarySum > 0 || businessSum > 0 || otherIncomeSum > 0)
+    ? [
+        { name: 'Salary Income', amount: salarySum, color: '#10B981', percent: Math.round((salarySum / liveIncomeTotal) * 100) },
+        { name: 'Business Income', amount: businessSum, color: '#F97316', percent: Math.round((businessSum / liveIncomeTotal) * 100) },
+        { name: 'Other Income', amount: otherIncomeSum, color: '#3B82F6', percent: Math.round((otherIncomeSum / liveIncomeTotal) * 100) },
+      ].filter((s) => s.amount > 0 || s.percent > 0)
+    : [
+        { name: 'Salary Income', amount: 15675, color: '#10B981', percent: 55 },
+        { name: 'Business Income', amount: 7980, color: '#F97316', percent: 28 },
+        { name: 'Other Income', amount: 4845, color: '#3B82F6', percent: 17 },
+      ];
+
+  // Dynamic monthly comparison data
   const monthlyComparison = [
     { month: 'Jan', income: 24000, expense: 17000 },
     { month: 'Feb', income: 29000, expense: 19500 },
@@ -99,27 +176,11 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
     { month: 'May', income: 21500, expense: 12500 },
     { month: 'Jun', income: 25000, expense: 14500 },
     { month: 'Jul', income: 27000, expense: 17000 },
-    { month: 'Aug', income: 28500, expense: 18750 },
+    { month: 'Aug', income: totalIncome, expense: totalExpense },
   ];
 
-  // Category Expense breakdown
-  const topExpenseCategories = [
-    { name: 'Family Expense', amount: 5250, color: '#3B82F6', percent: 28 },
-    { name: 'Personal Expense', amount: 3400, color: '#F97316', percent: 18 },
-    { name: 'Baby Expense', amount: 2250, color: '#EC4899', percent: 12 },
-    { name: 'Mobile Expense', amount: 1800, color: '#8B5CF6', percent: 10 },
-    { name: 'Office Expense', amount: 1500, color: '#06B6D4', percent: 8 },
-    { name: 'Business Expense', amount: 1350, color: '#10B981', percent: 7 },
-    { name: 'Medical Expense', amount: 1200, color: '#EAB308', percent: 6 },
-    { name: 'Other Expense', amount: 1750, color: '#64748B', percent: 9 },
-  ];
-
-  // Income Sources breakdown
-  const incomeSources = [
-    { name: 'Salary Income', amount: 15675, color: '#10B981', percent: 55 },
-    { name: 'Business Income', amount: 7980, color: '#F97316', percent: 28 },
-    { name: 'Other Income', amount: 4845, color: '#3B82F6', percent: 17 },
-  ];
+  const officeFundSpentPercent = Math.min(100, Math.round((officeFundSpent / (officeFundReceived || 1)) * 100));
+  const officeFundRemainingPercent = 100 - officeFundSpentPercent;
 
   return (
     <div className="space-y-5 text-slate-800">
@@ -130,7 +191,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
             <span>Hello, {userSettings.userName || 'Sabbir Ahmmed'}</span>
             <span className="text-xl">👋</span>
           </h1>
-          <p className="text-xs text-slate-500 font-medium">Here is your financial summary</p>
+          <p className="text-xs text-slate-500 font-medium">Here is your live financial summary</p>
         </div>
 
         <div className="flex items-center flex-wrap gap-2">
@@ -185,10 +246,45 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
         </div>
       </div>
 
+      {/* PROMINENT CASH IN HAND & WALLET BANNER */}
+      {cashAccount && (
+        <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white rounded-2xl p-5 shadow-md border border-amber-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+          <div className="flex items-center gap-3.5 relative z-10">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center font-bold shadow-inner shrink-0">
+              <Banknote className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white/20 text-amber-100 uppercase font-mono tracking-wider">
+                  PHYSICAL CASH
+                </span>
+                <span className="text-xs text-amber-100 font-medium">Live Balance</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight mt-0.5">
+                Cash in Hand: ৳ {cashAccount.currentBalance.toLocaleString()}
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 relative z-10 shrink-0">
+            <div className="text-right hidden md:block">
+              <span className="text-[11px] text-amber-100 block">Opening Cash</span>
+              <span className="text-sm font-bold font-mono">৳ {cashAccount.openingBalance.toLocaleString()}</span>
+            </div>
+            <button
+              onClick={onOpenTransferModal}
+              className="px-4 py-2 bg-white text-amber-900 hover:bg-amber-50 font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer active:scale-98"
+            >
+              Transfer Cash →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* TOP SUMMARY METRIC CARDS (6 CARDS IN 1 ROW) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Total Income */}
-        <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all cursor-pointer" onClick={() => onSelectModule('income')}>
           <div className="flex items-center gap-2 mb-1.5">
             <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold shadow-2xs shrink-0">
               <DollarSign className="w-4 h-4" />
@@ -205,7 +301,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
         </div>
 
         {/* Total Expense */}
-        <div className="bg-rose-50/70 border border-rose-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-rose-50/70 border border-rose-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all cursor-pointer" onClick={() => onSelectModule('expense')}>
           <div className="flex items-center gap-2 mb-1.5">
             <div className="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold shadow-2xs shrink-0">
               <ShoppingBag className="w-4 h-4" />
@@ -222,7 +318,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
         </div>
 
         {/* Net Balance */}
-        <div className="bg-sky-50/70 border border-sky-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-sky-50/70 border border-sky-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all cursor-pointer" onClick={() => onSelectModule('accounts')}>
           <div className="flex items-center gap-2 mb-1.5">
             <div className="w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center font-bold shadow-2xs shrink-0">
               <Wallet className="w-4 h-4" />
@@ -239,7 +335,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
         </div>
 
         {/* Office Fund */}
-        <div className="bg-purple-50/70 border border-purple-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-purple-50/70 border border-purple-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all cursor-pointer" onClick={() => onSelectModule('office_fund')}>
           <div className="flex items-center gap-2 mb-1.5">
             <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold shadow-2xs shrink-0">
               <Building className="w-4 h-4" />
@@ -255,7 +351,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
         </div>
 
         {/* Savings & Investment */}
-        <div className="bg-amber-50/70 border border-amber-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-amber-50/70 border border-amber-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all cursor-pointer" onClick={() => onSelectModule('savings')}>
           <div className="flex items-center gap-2 mb-1.5">
             <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shadow-2xs shrink-0">
               <PiggyBank className="w-4 h-4" />
@@ -272,7 +368,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
         </div>
 
         {/* Loan & Due */}
-        <div className="bg-red-50/70 border border-red-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all">
+        <div className="bg-red-50/70 border border-red-200/70 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all cursor-pointer" onClick={() => onSelectModule('loans')}>
           <div className="flex items-center gap-2 mb-1.5">
             <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center font-bold shadow-2xs shrink-0">
               <HandCoins className="w-4 h-4" />
@@ -321,12 +417,12 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
                 <div className="flex items-end gap-1 w-full justify-center h-full">
                   <div
                     className="w-2.5 sm:w-3.5 bg-emerald-500 rounded-t-md transition-all hover:opacity-90"
-                    style={{ height: `${(item.income / 35000) * 100}%` }}
+                    style={{ height: `${Math.min(100, (item.income / 35000) * 100)}%` }}
                     title={`Income: ৳ ${item.income}`}
                   />
                   <div
                     className="w-2.5 sm:w-3.5 bg-rose-500 rounded-t-md transition-all hover:opacity-90"
-                    style={{ height: `${(item.expense / 35000) * 100}%` }}
+                    style={{ height: `${Math.min(100, (item.expense / 35000) * 100)}%` }}
                     title={`Expense: ৳ ${item.expense}`}
                   />
                 </div>
@@ -358,7 +454,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                 <span className="text-[10px] font-semibold text-slate-400 uppercase">Total</span>
-                <span className="text-xs font-extrabold font-mono text-slate-900">৳ 18,750</span>
+                <span className="text-xs font-extrabold font-mono text-slate-900">৳ {liveExpenseTotal.toLocaleString()}</span>
               </div>
             </div>
 
@@ -394,7 +490,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                 <span className="text-[10px] font-semibold text-slate-400 uppercase">Total</span>
-                <span className="text-xs font-extrabold font-mono text-slate-900">৳ 28,500</span>
+                <span className="text-xs font-extrabold font-mono text-slate-900">৳ {liveIncomeTotal.toLocaleString()}</span>
               </div>
             </div>
 
@@ -454,12 +550,12 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
 
           <div className="space-y-1 pt-1">
             <div className="flex justify-between text-[11px] font-semibold text-slate-500">
-              <span>66% spent</span>
-              <span>34% remaining</span>
+              <span>{officeFundSpentPercent}% spent</span>
+              <span>{officeFundRemainingPercent}% remaining</span>
             </div>
             <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden flex">
-              <div className="bg-emerald-500 h-full" style={{ width: '66%' }} />
-              <div className="bg-sky-400 h-full" style={{ width: '34%' }} />
+              <div className="bg-emerald-500 h-full" style={{ width: `${officeFundSpentPercent}%` }} />
+              <div className="bg-sky-400 h-full" style={{ width: `${officeFundRemainingPercent}%` }} />
             </div>
           </div>
         </div>
@@ -545,23 +641,26 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
           </div>
 
           <div className="space-y-3 pt-1">
-            {topExpenseCategories.slice(0, 7).map((c) => (
-              <div key={c.name} className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-slate-700">{c.name}</span>
-                  <span className="font-bold font-mono text-slate-900">৳ {c.amount.toLocaleString()}</span>
+            {topExpenseCategories.slice(0, 7).map((c) => {
+              const maxCatAmt = topExpenseCategories[0]?.amount || 1;
+              return (
+                <div key={c.name} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-slate-700">{c.name}</span>
+                    <span className="font-bold font-mono text-slate-900">৳ {c.amount.toLocaleString()}</span>
+                  </div>
+                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(100, (c.amount / maxCatAmt) * 100)}%`,
+                        backgroundColor: c.color,
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${(c.amount / 5250) * 100}%`,
-                      backgroundColor: c.color,
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -581,48 +680,42 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
           </div>
 
           <div className="divide-y divide-slate-100">
-            {recentTxs.map((tx, idx) => {
+            {recentTxs.map((tx) => {
               const isIncome =
                 tx.type === 'personal_income' ||
                 tx.type === 'salary_income' ||
                 tx.type === 'office_fund_received' ||
-                tx.type === 'additional_income';
+                tx.type === 'additional_income' ||
+                tx.type === 'income' ||
+                tx.type === 'money_received';
 
-              const displayTitles = ['Salary Received', 'Family Bazar', 'Mobile Recharge', 'Office Expense', 'Baby Milk Powder'];
-              const displayCategories = ['Salary Income', 'Family Expense', 'Mobile Expense', 'Office Expense', 'Baby Expense'];
-              const displayDates = ['18 Apr 2026', '16 Apr 2026', '15 Apr 2026', '14 Apr 2026', '12 Apr 2026'];
-              const displayAmounts = [12000, 1250, 450, 800, 1200];
-
-              const title = displayTitles[idx] || tx.description;
-              const catName = displayCategories[idx] || tx.payeePayer;
-              const dateStr = displayDates[idx] || formatDate(tx.date);
-              const amt = displayAmounts[idx] || tx.amount;
-              const isInc = idx === 0 || isIncome;
+              const cat = categories.find((c) => c.id === tx.categoryId);
+              const catName = cat ? cat.name : tx.payeePayer || 'General';
 
               return (
-                <div key={tx.id || idx} className="py-2.5 flex items-center justify-between text-xs">
+                <div key={tx.id} className="py-2.5 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold shrink-0 ${
-                        isInc ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                        isIncome ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
                       }`}
                     >
-                      {isInc ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                      {isIncome ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900">{title}</p>
+                      <p className="font-bold text-slate-900">{tx.description || 'Transaction'}</p>
                       <p className="text-[10px] text-slate-500">
-                        {dateStr} · <span className="text-slate-600 font-medium">{catName}</span>
+                        {formatDate(tx.date)} · <span className="text-slate-600 font-medium">{catName}</span>
                       </p>
                     </div>
                   </div>
 
                   <span
                     className={`font-bold font-mono text-xs ${
-                      isInc ? 'text-emerald-600' : 'text-rose-600'
+                      isIncome ? 'text-emerald-600' : 'text-rose-600'
                     }`}
                   >
-                    {isInc ? '+' : '-'} ৳ {amt.toLocaleString()}
+                    {isIncome ? '+' : '-'} ৳ {tx.amount.toLocaleString()}
                   </span>
                 </div>
               );
@@ -656,31 +749,35 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
               <tbody className="divide-y divide-slate-100">
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">Total Income</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-emerald-600">28,500</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-emerald-600">{totalIncome.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">Total Expense</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-rose-600">18,750</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-rose-600">{totalExpense.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-bold text-slate-900">Net Balance</td>
-                  <td className="py-2.5 text-right font-extrabold font-mono text-sky-600">9,750</td>
+                  <td className="py-2.5 text-right font-extrabold font-mono text-sky-600">{netBalance.toLocaleString()}</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5 font-medium text-slate-800">Cash in Hand</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-amber-600">{cashAccount ? cashAccount.currentBalance.toLocaleString() : '0'}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">Office Fund Remaining</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-slate-800">4,300</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-slate-800">{officeFundRemaining.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">Total Savings & Investment</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-slate-800">15,000</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-slate-800">{savingsAndInvest.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">You will receive (Loan & Due)</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-emerald-600">18,000</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-emerald-600">{receiveAmt.toLocaleString()}</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 font-medium text-slate-800">You will pay (Loan & Due)</td>
-                  <td className="py-2.5 text-right font-bold font-mono text-rose-600">17,000</td>
+                  <td className="py-2.5 text-right font-bold font-mono text-rose-600">{payAmt.toLocaleString()}</td>
                 </tr>
               </tbody>
             </table>
