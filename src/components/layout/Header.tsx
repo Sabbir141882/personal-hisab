@@ -37,27 +37,27 @@ export const Header: React.FC<HeaderProps> = ({
   const currentInfo = moduleTitles[activeModule] || { title: 'My Finance', subtitle: '' };
 
   return (
-    <header className="bg-white border-b border-slate-200 px-6 py-3.5 sticky top-0 z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <header className="bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-6 py-3.5 sticky top-0 z-20 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
       {/* Title & Breadcrumbs */}
       <div>
-        <div className="flex items-center gap-2 text-xs text-slate-500 mb-0.5">
-          <span>My Finance</span>
-          <span>/</span>
-          <span className="font-medium text-slate-700 capitalize">{activeModule.replace(/_/g, ' ')}</span>
+        <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-0.5">
+          <span className="font-medium text-slate-500">My Finance</span>
+          <span className="text-slate-300">/</span>
+          <span className="font-semibold text-slate-700 capitalize">{activeModule.replace(/_/g, ' ')}</span>
         </div>
         <h1 className="text-xl font-bold text-slate-900 tracking-tight">{currentInfo.title}</h1>
-        <p className="text-xs text-slate-500 hidden sm:block">{currentInfo.subtitle}</p>
+        <p className="text-xs text-slate-500 hidden sm:block mt-0.5">{currentInfo.subtitle}</p>
       </div>
 
       {/* Action Buttons Toolbar */}
       <div className="flex items-center flex-wrap gap-2 shrink-0">
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-md border border-slate-200">
-          Currency: BDT
+        <span className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100/80 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200/80 font-mono tracking-tight">
+          BDT ৳
         </span>
 
         <button
           onClick={() => onOpenTxModal('personal_income')}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium text-xs rounded-lg border border-emerald-200 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs rounded-lg transition-all shadow-xs hover:shadow-sm cursor-pointer active:scale-98"
         >
           <TrendingUp className="w-3.5 h-3.5" />
           <span>+ Income</span>
@@ -65,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           onClick={() => onOpenTxModal('personal_expense')}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-medium text-xs rounded-lg border border-rose-200 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs rounded-lg transition-all shadow-xs hover:shadow-sm cursor-pointer active:scale-98"
         >
           <TrendingDown className="w-3.5 h-3.5" />
           <span>+ Expense</span>
@@ -73,7 +73,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           onClick={onOpenOfficeModal}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium text-xs rounded-lg border border-purple-200 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs rounded-lg transition-all shadow-xs hover:shadow-sm cursor-pointer active:scale-98"
         >
           <Building className="w-3.5 h-3.5" />
           <span>+ Office Fund</span>
@@ -81,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           onClick={onOpenTransferModal}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg border border-slate-200 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg transition-all shadow-xs hover:shadow-sm cursor-pointer active:scale-98"
         >
           <ArrowLeftRight className="w-3.5 h-3.5" />
           <span>Transfer</span>
@@ -90,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={() => setActiveModule('settings')}
           title="Settings"
-          className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+          className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all cursor-pointer border border-transparent hover:border-slate-200"
         >
           <Settings className="w-4 h-4" />
         </button>

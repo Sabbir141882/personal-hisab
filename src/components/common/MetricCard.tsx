@@ -76,31 +76,31 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`p-4 rounded-xl border ${styles.bg} ${styles.border} transition-all ${
-        onClick ? 'cursor-pointer hover:shadow-md' : ''
+      className={`p-5 rounded-2xl border ${styles.bg} ${styles.border} shadow-2xs transition-all duration-200 ${
+        onClick ? 'cursor-pointer hover:shadow-md hover:-translate-y-0.5' : ''
       }`}
     >
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <span className="text-xs font-semibold text-slate-500 truncate">{title}</span>
+      <div className="flex items-center justify-between gap-2 mb-2.5">
+        <span className="text-xs font-semibold text-slate-500 tracking-tight truncate">{title}</span>
         <div className="flex items-center gap-1.5 shrink-0">
           {badgeText && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/80 border border-slate-200 text-slate-700">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/90 border border-slate-200/80 text-slate-700 shadow-2xs">
               {badgeText}
             </span>
           )}
           {Icon && (
-            <div className={`p-1.5 rounded-lg ${styles.iconBg} ${styles.iconColor}`}>
+            <div className={`p-2 rounded-xl ${styles.iconBg} ${styles.iconColor} shadow-2xs`}>
               <Icon className="w-4 h-4" />
             </div>
           )}
         </div>
       </div>
 
-      <div className={`text-xl font-bold font-sans tracking-tight tabular-nums ${styles.text}`}>
+      <div className={`text-2xl font-bold font-mono tracking-tight tabular-nums ${styles.text}`}>
         {formatCurrency(amount, currencySymbol)}
       </div>
 
-      {subtitle && <p className="text-[11px] text-slate-500 mt-1 truncate">{subtitle}</p>}
+      {subtitle && <p className="text-[11px] font-medium text-slate-500 mt-1.5 truncate">{subtitle}</p>}
     </div>
   );
 };
