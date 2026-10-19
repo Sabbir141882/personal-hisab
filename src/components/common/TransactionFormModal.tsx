@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Account, Category, FinancialOwnership, OfficeFund, Transaction, TransactionType } from '../../types/finance';
 import { Modal } from './Modal';
 
+import { FileText, Printer } from 'lucide-react';
+
 interface TransactionFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (transactionData: Partial<Transaction>) => void;
+  onSave: (transactionData: Partial<Transaction>, andOpenVoucher?: boolean) => void;
   editingTransaction?: Transaction | null;
   accounts: Account[];
   categories: Category[];
@@ -105,6 +107,8 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
 
+  const [submitAction, setSubmitAction] = useState<'save' | 'save_and_voucher'>('save');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const parsedAmount = parseFloat(amount);
@@ -134,27 +138,30 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
 
-    onSave({
-      id: editingTransaction?.id,
-      date,
-      time,
-      type,
-      ownership,
-      amount: parsedAmount,
-      fee: parseFloat(fee) || 0,
-      sourceAccountId,
-      destinationAccountId: destinationAccountId || undefined,
-      categoryId: categoryId || categories[0]?.id || 'cat_family_expense',
-      subcategoryId: subcategoryId || undefined,
-      payeePayer: payeePayer || (type.includes('income') ? 'Employer/Client' : 'Vendor'),
-      description,
-      referenceNumber: referenceNumber || undefined,
-      relatedOfficeFundId: relatedOfficeFundId || undefined,
-      familyMember: familyMember || undefined,
-      tags: tagsArray,
-      notes: notes || undefined,
-      status: editingTransaction?.status || 'completed',
-    });
+    onSave(
+      {
+        id: editingTransaction?.id,
+        date,
+        time,
+        type,
+        ownership,
+        amount: parsedAmount,
+        fee: parseFloat(fee) || 0,
+        sourceAccountId,
+        destinationAccountId: destinationAccountId || undefined,
+        categoryId: categoryId || categories[0]?.id || 'cat_family_expense',
+        subcategoryId: subcategoryId || undefined,
+        payeePayer: payeePayer || (type.includes('income') ? 'Employer/Client' : 'Vendor'),
+        description,
+        referenceNumber: referenceNumber || undefined,
+        relatedOfficeFundId: relatedOfficeFundId || undefined,
+        familyMember: familyMember || undefined,
+        tags: tagsArray,
+        notes: notes || undefined,
+        status: editingTransaction?.status || 'completed',
+      },
+      submitAction === 'save_and_voucher'
+    );
 
     onClose();
   };
@@ -366,11 +373,11 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Payee / Payer / Counterparty
+              Person / Organization Name (ব্যক্তি বা প্রতিষ্ঠানের নাম)
             </label>
             <input
               type="text"
-              placeholder="e.g. Vendor, Employer, Landlord, Name"
+              placeholder="e.g. Rahim Ahmed, City Bank, ABC Enterprise"
               value={payeePayer}
               onChange={(e) => setPayeePayer(e.target.value)}
               className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
@@ -430,21 +437,50 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
           )}
         </div>
 
+        {/* Notes / Special Remarks */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
+            Notes / Special Remarks (মন্তব্য / বিশেষ বিবরণ)
+          </label>
+          <textarea
+            rows={2}
+            placeholder="e.g. Paid by Cheque #10245, specific terms, receiver contact or details"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+          />
+        </div>
+
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-lg transition-colors cursor-pointer shadow-xs"
-          >
-            {editingTransaction ? 'Update Transaction' : 'Save Record'}
-          </button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-slate-200">
+          <div className="text-[11px] text-slate-500">
+            ভাউচার ও প্রিন্ট কপি পেতে <strong>"Save & View Voucher"</strong> চাপুন
+          </div>
+
+          <div className="flex items-center justify-end gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              onClick={() => setSubmitAction('save')}
+              className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer shadow-2xs"
+            >
+              {editingTransaction ? 'Update Record' : 'Save Record'}
+            </button>
+            <button
+              type="submit"
+              onClick={() => setSubmitAction('save_and_voucher')}
+              className="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Save & View Voucher (ভাউচার দেখুন)</span>
+            </button>
+          </div>
         </div>
       </form>
     </Modal>

@@ -40,6 +40,12 @@ import { TransactionFormModal } from './components/common/TransactionFormModal';
 import { OfficeFundModal } from './components/common/OfficeFundModal';
 import { TransferModal } from './components/common/TransferModal';
 import { ApproveLockModal } from './components/common/ApproveLockModal';
+import {
+  VoucherData,
+  VoucherModal,
+  createVoucherFromDebt,
+  createVoucherFromTransaction,
+} from './components/common/VoucherModal';
 
 import { DashboardModule } from './components/modules/DashboardModule';
 import { TransactionsModule } from './components/modules/TransactionsModule';
@@ -78,8 +84,25 @@ export function App() {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
 
+  // Voucher Preview & Print Modal State
+  const [activeVoucher, setActiveVoucher] = useState<VoucherData | null>(null);
+  const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
+
   // Recalculate account balances based on active transaction ledger
   const calculatedAccounts = calculateAccountBalances(accounts, transactions);
+
+  // Handlers for viewing vouchers
+  const handleViewTransactionVoucher = (tx: Transaction) => {
+    const v = createVoucherFromTransaction(tx, calculatedAccounts, categories);
+    setActiveVoucher(v);
+    setIsVoucherModalOpen(true);
+  };
+
+  const handleViewDebtVoucher = (debt: DebtReceivable) => {
+    const v = createVoucherFromDebt(debt, calculatedAccounts, categories);
+    setActiveVoucher(v);
+    setIsVoucherModalOpen(true);
+  };
 
   // Authoritative financial summary
   const summary = calculateFinancialSummary(
@@ -102,7 +125,7 @@ export function App() {
   };
 
   // Handlers for Transactions
-  const handleSaveTransaction = (txData: Partial<Transaction>) => {
+  const handleSaveTransaction = (txData: Partial<Transaction>, andOpenVoucher?: boolean) => {
     // If editing an approved entry, reject!
     if (txData.id) {
       const existing = transactions.find((t) => t.id === txData.id);
@@ -113,9 +136,13 @@ export function App() {
     }
 
     let updatedTxs: Transaction[];
+    let targetTx: Transaction;
+
     if (txData.id) {
       // Edit existing unapproved record
-      updatedTxs = transactions.map((t) => (t.id === txData.id ? ({ ...t, ...txData } as Transaction) : t));
+      const existing = transactions.find((t) => t.id === txData.id);
+      targetTx = { ...(existing || {}), ...txData } as Transaction;
+      updatedTxs = transactions.map((t) => (t.id === txData.id ? targetTx : t));
     } else {
       // Create new record (starts as unapproved / editable)
       const newTx: Transaction = {
@@ -142,11 +169,16 @@ export function App() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
+      targetTx = newTx;
       updatedTxs = [newTx, ...transactions];
     }
 
     saveTransactions(updatedTxs);
     setTransactions(updatedTxs);
+
+    if (andOpenVoucher) {
+      handleViewTransactionVoucher(targetTx);
+    }
   };
 
   const handleReverseTransaction = (txId: string) => {
@@ -339,6 +371,7 @@ export function App() {
             onOpenTransferModal={() => setIsTransferModalOpen(true)}
             onOpenApproveModal={(ids) => handleOpenApproveModal(ids)}
             onSelectModule={setActiveModule}
+            onViewVoucher={handleViewTransactionVoucher}
           />
         );
 
@@ -361,6 +394,7 @@ export function App() {
             }}
             onReverseTransaction={handleReverseTransaction}
             onOpenApproveModal={(ids) => handleOpenApproveModal(ids)}
+            onViewVoucher={handleViewTransactionVoucher}
           />
         );
 
@@ -376,6 +410,7 @@ export function App() {
               setEditingTransaction(null);
               setIsTxModalOpen(true);
             }}
+            onViewVoucher={handleViewTransactionVoucher}
           />
         );
 
@@ -391,6 +426,7 @@ export function App() {
               setEditingTransaction(null);
               setIsTxModalOpen(true);
             }}
+            onViewVoucher={handleViewTransactionVoucher}
           />
         );
 
@@ -408,6 +444,7 @@ export function App() {
               setEditingTransaction(null);
               setIsTxModalOpen(true);
             }}
+            onViewVoucher={handleViewTransactionVoucher}
           />
         );
 
@@ -495,23 +532,31 @@ export function App() {
         return (
           <LoansModule
             debts={debts}
+            categories={categories}
             userSettings={userSettings}
-            onSaveDebt={(dData) => {
+            onSaveDebt={(dData, andOpenVoucher) => {
               const newD: DebtReceivable = {
                 id: 'debt_' + Date.now(),
                 type: dData.type || 'loan_taken',
                 title: dData.title || 'Loan',
-                counterparty: dData.counterparty || 'Lender',
+                counterparty: dData.counterparty || 'General',
                 originalAmount: dData.originalAmount || 0,
                 currentBalance: dData.currentBalance || dData.originalAmount || 0,
+                categoryId: dData.categoryId,
+                subcategoryId: dData.subcategoryId,
                 dueDate: dData.dueDate || '2026-12-31',
                 accountId: accounts[0]?.id || '',
                 status: 'active',
+                notes: dData.notes,
                 createdAt: new Date().toISOString(),
               };
               const updated = [...debts, newD];
               saveDebts(updated);
               setDebts(updated);
+
+              if (andOpenVoucher) {
+                handleViewDebtVoucher(newD);
+              }
             }}
             onRecordRepayment={(debtId, repayAmt) => {
               const updated = debts.map((d) =>
@@ -526,6 +571,7 @@ export function App() {
               saveDebts(updated);
               setDebts(updated);
             }}
+            onViewVoucher={handleViewDebtVoucher}
           />
         );
 
@@ -644,6 +690,14 @@ export function App() {
         onConfirmApprove={handleConfirmApprove}
         unapprovedCount={approveTargetTxIds ? approveTargetTxIds.length : unapprovedCount}
         isSingleTx={approveTargetTxIds?.length === 1}
+      />
+
+      {/* Official Voucher Preview & Print Modal */}
+      <VoucherModal
+        isOpen={isVoucherModalOpen}
+        onClose={() => setIsVoucherModalOpen(false)}
+        voucher={activeVoucher}
+        userSettings={userSettings}
       />
     </div>
   );

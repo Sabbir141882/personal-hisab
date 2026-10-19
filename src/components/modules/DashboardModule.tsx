@@ -7,6 +7,7 @@ import {
   Calendar,
   CreditCard,
   DollarSign,
+  FileText,
   HandCoins,
   Heart,
   Lock,
@@ -46,6 +47,7 @@ interface DashboardModuleProps {
   onOpenTransferModal: () => void;
   onOpenApproveModal: (targetTxIds?: string[]) => void;
   onSelectModule: (module: any) => void;
+  onViewVoucher?: (tx: Transaction) => void;
 }
 
 export const DashboardModule: React.FC<DashboardModuleProps> = ({
@@ -62,9 +64,14 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
   onOpenTransferModal,
   onOpenApproveModal,
   onSelectModule,
+  onViewVoucher,
 }) => {
   const [selectedFilter, setSelectedFilter] = useState<'this_month' | 'last_month' | 'this_year' | 'custom'>('this_month');
-  const [selectedMonth, setSelectedMonth] = useState('April 2026');
+  
+  // Format current month string
+  const now = new Date();
+  const currentMonthLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const [selectedMonth, setSelectedMonth] = useState(currentMonthLabel);
 
   const unapprovedTxs = transactions.filter((t) => t.status === 'completed' && !t.isApproved);
 
@@ -79,8 +86,8 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
 
   // 100% PURE LIVE TOTALS FROM SUMMARY & TRANSACTIONS (NO FAKE FALLBACKS)
   const totalIncome = summary.totalPersonalIncome || 0;
-  const totalExpense = summary.totalPersonalExpenses + summary.totalFamilyExpenses;
-  const netBalance = summary.totalCashAndBankBalances;
+  const totalExpense = (summary.totalPersonalExpenses || 0) + (summary.totalFamilyExpenses || 0);
+  const netBalance = summary.totalCashAndBankBalances || 0;
   
   const officeFundReceived = summary.totalOfficeFundsReceived || 0;
   const officeFundSpent = summary.totalOfficeExpenses || 0;
@@ -136,9 +143,9 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
   completedTxs.forEach((tx) => {
     const isIncome = tx.type.includes('income') || tx.type === 'office_fund_received' || tx.type === 'money_received';
     if (isIncome) {
-      if (tx.type === 'salary_income' || tx.description.toLowerCase().includes('salary')) {
+      if (tx.type === 'salary_income' || (tx.description && tx.description.toLowerCase().includes('salary'))) {
         salarySum += tx.amount;
-      } else if (tx.type === 'additional_income' || tx.description.toLowerCase().includes('business')) {
+      } else if (tx.type === 'additional_income' || (tx.description && tx.description.toLowerCase().includes('business'))) {
         businessSum += tx.amount;
       } else {
         otherIncomeSum += tx.amount;
@@ -155,20 +162,49 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
       ].filter((s) => s.amount > 0)
     : [];
 
-  // Dynamic monthly comparison data
-  const monthlyComparison = [
-    { month: 'Jan', income: 24000, expense: 17000 },
-    { month: 'Feb', income: 29000, expense: 19500 },
-    { month: 'Mar', income: 21500, expense: 17000 },
-    { month: 'Apr', income: 29500, expense: 21000 },
-    { month: 'May', income: 21500, expense: 12500 },
-    { month: 'Jun', income: 25000, expense: 14500 },
-    { month: 'Jul', income: 27000, expense: 17000 },
-    { month: 'Aug', income: totalIncome, expense: totalExpense },
-  ];
+  // PURE REAL DYNAMIC MONTHLY COMPARISON FROM TRANSACTIONS (LAST 6 MONTHS)
+  const getDynamicMonthlyComparison = () => {
+    const monthList: { label: string; key: string }[] = [];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const y = d.getFullYear();
+      const m = (d.getMonth() + 1).toString().padStart(2, '0');
+      monthList.push({
+        label: monthNames[d.getMonth()],
+        key: `${y}-${m}`,
+      });
+    }
 
-  const officeFundSpentPercent = Math.min(100, Math.round((officeFundSpent / (officeFundReceived || 1)) * 100));
-  const officeFundRemainingPercent = 100 - officeFundSpentPercent;
+    return monthList.map((m) => {
+      let monthIncome = 0;
+      let monthExpense = 0;
+
+      completedTxs.forEach((tx) => {
+        if (tx.date && tx.date.startsWith(m.key)) {
+          const isInc = tx.type.includes('income') || tx.type === 'office_fund_received' || tx.type === 'money_received';
+          const isExp = tx.type.includes('expense') || tx.type === 'office_expense' || tx.type === 'other_expense';
+          if (isInc) monthIncome += tx.amount;
+          if (isExp) monthExpense += tx.amount;
+        }
+      });
+
+      return { month: m.label, income: monthIncome, expense: monthExpense };
+    });
+  };
+
+  const monthlyComparison = getDynamicMonthlyComparison();
+  const maxMonthlyValue = Math.max(1, ...monthlyComparison.map((m) => Math.max(m.income, m.expense)));
+
+  // Office Fund Percentages
+  const officeFundSpentPercent = officeFundReceived > 0
+    ? Math.min(100, Math.round((officeFundSpent / officeFundReceived) * 100))
+    : 0;
+  const officeFundRemainingPercent = officeFundReceived > 0 ? 100 - officeFundSpentPercent : 0;
+
+  // SVG Circumference for radius 14 circle = 2 * PI * 14 = ~87.964
+  const SVG_CIRCUMFERENCE = 87.964;
 
   return (
     <div className="space-y-5 text-slate-800">
@@ -176,10 +212,10 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <span>Hello, {userSettings.userName || 'Sabbir Ahmmed'}</span>
+            <span>Hello, {userSettings.userName || 'User'}</span>
             <span className="text-xl">👋</span>
           </h1>
-          <p className="text-xs text-slate-500 font-medium">Here is your live financial summary</p>
+          <p className="text-xs text-slate-500 font-medium">Here is your live financial summary based on actual entries</p>
         </div>
 
         <div className="flex items-center flex-wrap gap-2">
@@ -190,10 +226,15 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
               onChange={(e) => setSelectedMonth(e.target.value)}
               className="bg-transparent border-none focus:outline-none text-xs font-semibold text-slate-800 cursor-pointer"
             >
-              <option value="April 2026">April 2026</option>
-              <option value="March 2026">March 2026</option>
-              <option value="February 2026">February 2026</option>
-              <option value="January 2026">January 2026</option>
+              {[0, 1, 2, 3, 4, 5].map((i) => {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const str = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                return (
+                  <option key={str} value={str}>
+                    {str}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -234,40 +275,40 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
         </div>
       </div>
 
-      {/* PROMINENT CASH IN HAND & WALLET BANNER */}
-      {cashAccount && (
-        <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white rounded-2xl p-5 shadow-md border border-amber-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
-          <div className="flex items-center gap-3.5 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center font-bold shadow-inner shrink-0">
-              <Banknote className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white/20 text-amber-100 uppercase font-mono tracking-wider">
-                  PHYSICAL CASH
-                </span>
-                <span className="text-xs text-amber-100 font-medium">Live Balance</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight mt-0.5">
-                Cash in Hand: ৳ {cashAccount.currentBalance.toLocaleString()}
-              </h2>
-            </div>
+      {/* PROMINENT CASH IN HAND BANNER */}
+      <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white rounded-2xl p-5 shadow-md border border-amber-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+        <div className="flex items-center gap-3.5 relative z-10">
+          <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center font-bold shadow-inner shrink-0">
+            <Banknote className="w-6 h-6" />
           </div>
-
-          <div className="flex items-center gap-3 relative z-10 shrink-0">
-            <div className="text-right hidden md:block">
-              <span className="text-[11px] text-amber-100 block">Opening Cash</span>
-              <span className="text-sm font-bold font-mono">৳ {cashAccount.openingBalance.toLocaleString()}</span>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white/20 text-amber-100 uppercase font-mono tracking-wider">
+                PHYSICAL CASH
+              </span>
+              <span className="text-xs text-amber-100 font-medium">Live Balance</span>
             </div>
-            <button
-              onClick={onOpenTransferModal}
-              className="px-4 py-2 bg-white text-amber-900 hover:bg-amber-50 font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer active:scale-98"
-            >
-              Transfer Cash →
-            </button>
+            <h2 className="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight mt-0.5">
+              Cash in Hand: ৳ {cashAccount ? cashAccount.currentBalance.toLocaleString() : '0'}
+            </h2>
           </div>
         </div>
-      )}
+
+        <div className="flex items-center gap-3 relative z-10 shrink-0">
+          <div className="text-right hidden md:block">
+            <span className="text-[11px] text-amber-100 block">Opening Cash</span>
+            <span className="text-sm font-bold font-mono">
+              ৳ {cashAccount ? cashAccount.openingBalance.toLocaleString() : '0'}
+            </span>
+          </div>
+          <button
+            onClick={onOpenTransferModal}
+            className="px-4 py-2 bg-white text-amber-900 hover:bg-amber-50 font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer active:scale-98"
+          >
+            Transfer Cash →
+          </button>
+        </div>
+      </div>
 
       {/* TOP SUMMARY METRIC CARDS (6 CARDS IN 1 ROW) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -282,9 +323,8 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
           <p className="text-lg font-bold font-mono text-slate-900 tracking-tight">
             ৳ {totalIncome.toLocaleString()}
           </p>
-          <p className="text-[10px] font-semibold text-emerald-600 mt-1 flex items-center gap-0.5">
-            <span>↑ 12%</span>
-            <span className="text-slate-500 font-normal">vs last month</span>
+          <p className="text-[10px] font-medium text-slate-500 mt-1 truncate">
+            Salary, business & other
           </p>
         </div>
 
@@ -299,9 +339,8 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
           <p className="text-lg font-bold font-mono text-slate-900 tracking-tight">
             ৳ {totalExpense.toLocaleString()}
           </p>
-          <p className="text-[10px] font-semibold text-rose-600 mt-1 flex items-center gap-0.5">
-            <span>↑ 8%</span>
-            <span className="text-slate-500 font-normal">vs last month</span>
+          <p className="text-[10px] font-medium text-slate-500 mt-1 truncate">
+            Personal & family spend
           </p>
         </div>
 
@@ -316,9 +355,8 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
           <p className="text-lg font-bold font-mono text-slate-900 tracking-tight">
             ৳ {netBalance.toLocaleString()}
           </p>
-          <p className="text-[10px] font-semibold text-emerald-600 mt-1 flex items-center gap-0.5">
-            <span>↑ 25%</span>
-            <span className="text-slate-500 font-normal">vs last month</span>
+          <p className="text-[10px] font-medium text-slate-500 mt-1 truncate">
+            Active cash & bank total
           </p>
         </div>
 
@@ -334,7 +372,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
             ৳ {officeFundReceived.toLocaleString()}
           </p>
           <p className="text-[10px] text-slate-500 mt-1 truncate">
-            Spent: ৳ {officeFundSpent.toLocaleString()} | Remaining: ৳ {officeFundRemaining.toLocaleString()}
+            Spent: ৳ {officeFundSpent.toLocaleString()} | Left: ৳ {officeFundRemaining.toLocaleString()}
           </p>
         </div>
 
@@ -349,9 +387,8 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
           <p className="text-lg font-bold font-mono text-slate-900 tracking-tight">
             ৳ {savingsAndInvest.toLocaleString()}
           </p>
-          <p className="text-[10px] font-semibold text-emerald-600 mt-1 flex items-center gap-0.5">
-            <span>↑ 10%</span>
-            <span className="text-slate-500 font-normal">vs last month</span>
+          <p className="text-[10px] font-medium text-slate-500 mt-1 truncate">
+            Saved ৳ {totalSavings.toLocaleString()} | Invest ৳ {totalInvestment.toLocaleString()}
           </p>
         </div>
 
@@ -367,7 +404,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
             ৳ {loanTotal.toLocaleString()}
           </p>
           <p className="text-[10px] text-slate-500 mt-1 truncate">
-            You will receive ৳ {receiveAmt.toLocaleString()} | You will pay ৳ {payAmt.toLocaleString()}
+            Recv ৳ {receiveAmt.toLocaleString()} | Pay ৳ {payAmt.toLocaleString()}
           </p>
         </div>
       </div>
@@ -400,23 +437,28 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
               <div className="border-b border-slate-400 w-full" />
             </div>
 
-            {monthlyComparison.map((item) => (
-              <div key={item.month} className="flex-1 flex flex-col items-center gap-1 h-full justify-end z-10">
-                <div className="flex items-end gap-1 w-full justify-center h-full">
-                  <div
-                    className="w-2.5 sm:w-3.5 bg-emerald-500 rounded-t-md transition-all hover:opacity-90"
-                    style={{ height: `${Math.min(100, (item.income / 35000) * 100)}%` }}
-                    title={`Income: ৳ ${item.income}`}
-                  />
-                  <div
-                    className="w-2.5 sm:w-3.5 bg-rose-500 rounded-t-md transition-all hover:opacity-90"
-                    style={{ height: `${Math.min(100, (item.expense / 35000) * 100)}%` }}
-                    title={`Expense: ৳ ${item.expense}`}
-                  />
+            {monthlyComparison.map((item) => {
+              const incPct = maxMonthlyValue > 0 ? (item.income / maxMonthlyValue) * 100 : 0;
+              const expPct = maxMonthlyValue > 0 ? (item.expense / maxMonthlyValue) * 100 : 0;
+
+              return (
+                <div key={item.month} className="flex-1 flex flex-col items-center gap-1 h-full justify-end z-10">
+                  <div className="flex items-end gap-1 w-full justify-center h-full">
+                    <div
+                      className="w-2.5 sm:w-3.5 bg-emerald-500 rounded-t-md transition-all hover:opacity-90"
+                      style={{ height: `${Math.max(incPct > 0 ? 4 : 0, incPct)}%` }}
+                      title={`Income: ৳ ${item.income.toLocaleString()}`}
+                    />
+                    <div
+                      className="w-2.5 sm:w-3.5 bg-rose-500 rounded-t-md transition-all hover:opacity-90"
+                      style={{ height: `${Math.max(expPct > 0 ? 4 : 0, expPct)}%` }}
+                      title={`Expense: ৳ ${item.expense.toLocaleString()}`}
+                    />
+                  </div>
+                  <span className="text-[10px] font-semibold text-slate-500 mt-1">{item.month}</span>
                 </div>
-                <span className="text-[10px] font-semibold text-slate-500 mt-1">{item.month}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -431,14 +473,33 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
             {/* SVG Donut */}
             <div className="relative w-36 h-36 shrink-0 flex items-center justify-center">
               <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="#3B82F6" strokeWidth="5" strokeDasharray="28 72" strokeDashoffset="0" />
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="#F97316" strokeWidth="5" strokeDasharray="18 82" strokeDashoffset="-28" />
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="#EC4899" strokeWidth="5" strokeDasharray="12 88" strokeDashoffset="-46" />
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="#8B5CF6" strokeWidth="5" strokeDasharray="10 90" strokeDashoffset="-58" />
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="#06B6D4" strokeWidth="5" strokeDasharray="8 92" strokeDashoffset="-68" />
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="#10B981" strokeWidth="5" strokeDasharray="7 93" strokeDashoffset="-76" />
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="#EAB308" strokeWidth="5" strokeDasharray="6 94" strokeDashoffset="-83" />
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="#64748B" strokeWidth="5" strokeDasharray="11 89" strokeDashoffset="-89" />
+                {liveExpenseTotal === 0 ? (
+                  <circle cx="18" cy="18" r="14" fill="transparent" stroke="#E2E8F0" strokeWidth="5" />
+                ) : (
+                  (() => {
+                    let cumulativeDash = 0;
+                    return topExpenseCategories.map((c) => {
+                      const strokeDash = (c.amount / liveExpenseTotal) * SVG_CIRCUMFERENCE;
+                      const strokeGap = SVG_CIRCUMFERENCE - strokeDash;
+                      const dashOffset = -cumulativeDash;
+                      cumulativeDash += strokeDash;
+
+                      return (
+                        <circle
+                          key={c.name}
+                          cx="18"
+                          cy="18"
+                          r="14"
+                          fill="transparent"
+                          stroke={c.color}
+                          strokeWidth="5"
+                          strokeDasharray={`${strokeDash.toFixed(2)} ${strokeGap.toFixed(2)}`}
+                          strokeDashoffset={dashOffset.toFixed(2)}
+                        />
+                      );
+                    });
+                  })()
+                )}
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                 <span className="text-[10px] font-semibold text-slate-400 uppercase">Total</span>
@@ -448,15 +509,19 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
 
             {/* Legend percentages */}
             <div className="flex-1 grid grid-cols-1 gap-1 text-[11px] max-h-48 overflow-y-auto pr-1">
-              {topExpenseCategories.map((c) => (
-                <div key={c.name} className="flex items-center justify-between text-slate-700">
-                  <div className="flex items-center gap-1.5 truncate">
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
-                    <span className="truncate">{c.name}</span>
+              {topExpenseCategories.length === 0 ? (
+                <div className="text-xs text-slate-400 italic py-4">No expense entries found</div>
+              ) : (
+                topExpenseCategories.map((c) => (
+                  <div key={c.name} className="flex items-center justify-between text-slate-700">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
+                      <span className="truncate">{c.name}</span>
+                    </div>
+                    <span className="font-bold font-mono text-slate-900 ml-1">{c.percent}%</span>
                   </div>
-                  <span className="font-bold font-mono text-slate-900 ml-1">{c.percent}%</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -472,9 +537,33 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
             {/* SVG Donut */}
             <div className="relative w-36 h-36 shrink-0 flex items-center justify-center">
               <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="#10B981" strokeWidth="5" strokeDasharray="55 45" strokeDashoffset="0" />
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="#F97316" strokeWidth="5" strokeDasharray="28 72" strokeDashoffset="-55" />
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="#3B82F6" strokeWidth="5" strokeDasharray="17 83" strokeDashoffset="-83" />
+                {liveIncomeTotal === 0 ? (
+                  <circle cx="18" cy="18" r="14" fill="transparent" stroke="#E2E8F0" strokeWidth="5" />
+                ) : (
+                  (() => {
+                    let cumulativeDash = 0;
+                    return incomeSources.map((s) => {
+                      const strokeDash = (s.amount / liveIncomeTotal) * SVG_CIRCUMFERENCE;
+                      const strokeGap = SVG_CIRCUMFERENCE - strokeDash;
+                      const dashOffset = -cumulativeDash;
+                      cumulativeDash += strokeDash;
+
+                      return (
+                        <circle
+                          key={s.name}
+                          cx="18"
+                          cy="18"
+                          r="14"
+                          fill="transparent"
+                          stroke={s.color}
+                          strokeWidth="5"
+                          strokeDasharray={`${strokeDash.toFixed(2)} ${strokeGap.toFixed(2)}`}
+                          strokeDashoffset={dashOffset.toFixed(2)}
+                        />
+                      );
+                    });
+                  })()
+                )}
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                 <span className="text-[10px] font-semibold text-slate-400 uppercase">Total</span>
@@ -484,15 +573,19 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
 
             {/* Legend percentages */}
             <div className="flex-1 space-y-2.5 text-xs">
-              {incomeSources.map((s) => (
-                <div key={s.name} className="flex items-center justify-between text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
-                    <span className="font-medium">{s.name}</span>
+              {incomeSources.length === 0 ? (
+                <div className="text-xs text-slate-400 italic py-4">No income entries found</div>
+              ) : (
+                incomeSources.map((s) => (
+                  <div key={s.name} className="flex items-center justify-between text-slate-700">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                      <span className="font-medium">{s.name}</span>
+                    </div>
+                    <span className="font-bold font-mono text-slate-900">{s.percent}%</span>
                   </div>
-                  <span className="font-bold font-mono text-slate-900">{s.percent}%</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -629,26 +722,32 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
           </div>
 
           <div className="space-y-3 pt-1">
-            {topExpenseCategories.slice(0, 7).map((c) => {
-              const maxCatAmt = topExpenseCategories[0]?.amount || 1;
-              return (
-                <div key={c.name} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium text-slate-700">{c.name}</span>
-                    <span className="font-bold font-mono text-slate-900">৳ {c.amount.toLocaleString()}</span>
+            {topExpenseCategories.length === 0 ? (
+              <div className="text-xs text-slate-400 italic py-6 text-center">
+                No expense category entries recorded
+              </div>
+            ) : (
+              topExpenseCategories.slice(0, 7).map((c) => {
+                const maxCatAmt = topExpenseCategories[0]?.amount || 1;
+                return (
+                  <div key={c.name} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-medium text-slate-700">{c.name}</span>
+                      <span className="font-bold font-mono text-slate-900">৳ {c.amount.toLocaleString()}</span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${Math.min(100, (c.amount / maxCatAmt) * 100)}%`,
+                          backgroundColor: c.color,
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{
-                        width: `${Math.min(100, (c.amount / maxCatAmt) * 100)}%`,
-                        backgroundColor: c.color,
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -667,48 +766,65 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
             </button>
           </div>
 
-          <div className="divide-y divide-slate-100">
-            {recentTxs.map((tx) => {
-              const isIncome =
-                tx.type === 'personal_income' ||
-                tx.type === 'salary_income' ||
-                tx.type === 'office_fund_received' ||
-                tx.type === 'additional_income' ||
-                tx.type === 'income' ||
-                tx.type === 'money_received';
+          {recentTxs.length === 0 ? (
+            <div className="text-xs text-slate-400 italic py-6 text-center">
+              No recent transactions recorded
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {recentTxs.map((tx) => {
+                const isIncome =
+                  tx.type === 'personal_income' ||
+                  tx.type === 'salary_income' ||
+                  tx.type === 'office_fund_received' ||
+                  tx.type === 'additional_income' ||
+                  tx.type === 'income' ||
+                  tx.type === 'money_received';
 
-              const cat = categories.find((c) => c.id === tx.categoryId);
-              const catName = cat ? cat.name : tx.payeePayer || 'General';
+                const cat = categories.find((c) => c.id === tx.categoryId);
+                const catName = cat ? cat.name : tx.payeePayer || 'General';
 
-              return (
-                <div key={tx.id} className="py-2.5 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold shrink-0 ${
-                        isIncome ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-                      }`}
-                    >
-                      {isIncome ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                return (
+                  <div key={tx.id} className="py-2.5 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold shrink-0 ${
+                          isIncome ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                        }`}
+                      >
+                        {isIncome ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-900">{tx.description || 'Transaction'}</p>
+                        <p className="text-[10px] text-slate-500">
+                          {formatDate(tx.date)} · <span className="text-slate-600 font-medium">{catName}</span>
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-slate-900">{tx.description || 'Transaction'}</p>
-                      <p className="text-[10px] text-slate-500">
-                        {formatDate(tx.date)} · <span className="text-slate-600 font-medium">{catName}</span>
-                      </p>
+
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`font-bold font-mono text-xs ${
+                          isIncome ? 'text-emerald-600' : 'text-rose-600'
+                        }`}
+                      >
+                        {isIncome ? '+' : '-'} ৳ {tx.amount.toLocaleString()}
+                      </span>
+                      {onViewVoucher && (
+                        <button
+                          onClick={() => onViewVoucher(tx)}
+                          className="p-1 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded cursor-pointer transition-colors"
+                          title="View & Print Voucher (ভাউচার দেখুন ও প্রিন্ট করুন)"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
-
-                  <span
-                    className={`font-bold font-mono text-xs ${
-                      isIncome ? 'text-emerald-600' : 'text-rose-600'
-                    }`}
-                  >
-                    {isIncome ? '+' : '-'} ৳ {tx.amount.toLocaleString()}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* COLUMN 3: MONTHLY SUMMARY */}

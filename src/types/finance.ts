@@ -208,6 +208,8 @@ export interface DebtReceivable {
   counterparty: string;
   originalAmount: number;
   currentBalance: number;
+  categoryId?: string;
+  subcategoryId?: string;
   interestRate?: number;
   dueDate: string;
   accountId: string;

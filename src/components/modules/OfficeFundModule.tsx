@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Clock,
   DollarSign,
+  FileText,
   PlusCircle,
   Receipt,
   RotateCcw,
@@ -30,6 +31,7 @@ interface OfficeFundModuleProps {
   userSettings: UserSettings;
   onOpenAddFundModal: () => void;
   onOpenAddTxModal: (defaultType?: string) => void;
+  onViewVoucher?: (tx: Transaction) => void;
 }
 
 export const OfficeFundModule: React.FC<OfficeFundModuleProps> = ({
@@ -40,6 +42,7 @@ export const OfficeFundModule: React.FC<OfficeFundModuleProps> = ({
   userSettings,
   onOpenAddFundModal,
   onOpenAddTxModal,
+  onViewVoucher,
 }) => {
   const [selectedFundId, setSelectedFundId] = useState<string>(officeFunds[0]?.id || '');
 
@@ -244,12 +247,13 @@ export const OfficeFundModule: React.FC<OfficeFundModuleProps> = ({
                       <th className="py-2.5 px-3">Description</th>
                       <th className="py-2.5 px-3">Payee</th>
                       <th className="py-2.5 px-3 text-right">Amount (BDT)</th>
+                      <th className="py-2.5 px-3 text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {fundTxs.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-6 text-center text-slate-400 italic">
+                        <td colSpan={6} className="py-6 text-center text-slate-400 italic">
                           No expenses allocated to this office fund advance yet.
                         </td>
                       </tr>
@@ -274,6 +278,18 @@ export const OfficeFundModule: React.FC<OfficeFundModuleProps> = ({
                           <td className="py-2.5 px-3 text-slate-600">{tx.payeePayer}</td>
                           <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
                             {formatCurrency(tx.amount, userSettings.currencySymbol)}
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            {onViewVoucher && (
+                              <button
+                                onClick={() => onViewVoucher(tx)}
+                                className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[10px] rounded border border-slate-300 inline-flex items-center gap-1 cursor-pointer shadow-2xs transition-colors"
+                                title="View & Print Voucher (ভাউচার দেখুন ও প্রিন্ট করুন)"
+                              >
+                                <FileText className="w-3 h-3 text-purple-600" />
+                                <span>Voucher</span>
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))

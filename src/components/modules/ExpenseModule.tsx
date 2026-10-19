@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, PlusCircle, ShoppingBag, TrendingDown, User } from 'lucide-react';
+import { FileText, Heart, PlusCircle, ShoppingBag, TrendingDown, User } from 'lucide-react';
 import { Account, Category, Transaction, UserSettings } from '../../types/finance';
 import { formatCurrency, formatDate } from '../../services/financialEngine';
 
@@ -9,6 +9,7 @@ interface ExpenseModuleProps {
   categories: Category[];
   userSettings: UserSettings;
   onOpenAddModal: (defaultType?: string) => void;
+  onViewVoucher?: (tx: Transaction) => void;
 }
 
 export const ExpenseModule: React.FC<ExpenseModuleProps> = ({
@@ -17,6 +18,7 @@ export const ExpenseModule: React.FC<ExpenseModuleProps> = ({
   categories,
   userSettings,
   onOpenAddModal,
+  onViewVoucher,
 }) => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'personal' | 'family'>('all');
 
@@ -168,12 +170,13 @@ export const ExpenseModule: React.FC<ExpenseModuleProps> = ({
               <th className="py-3 px-4">Ownership</th>
               <th className="py-3 px-4">Payment Account</th>
               <th className="py-3 px-4 text-right">Amount (BDT)</th>
+              <th className="py-3 px-4 text-center">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredTxs.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-slate-400 italic">
+                <td colSpan={8} className="py-8 text-center text-slate-400 italic">
                   No expense records found matching filter.
                 </td>
               </tr>
@@ -201,6 +204,18 @@ export const ExpenseModule: React.FC<ExpenseModuleProps> = ({
                     <td className="py-3 px-4 text-slate-600">{account?.name || '-'}</td>
                     <td className="py-3 px-4 text-right font-sans font-bold text-slate-900">
                       -{formatCurrency(tx.amount, userSettings.currencySymbol)}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      {onViewVoucher && (
+                        <button
+                          onClick={() => onViewVoucher(tx)}
+                          className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[10px] rounded border border-slate-300 inline-flex items-center gap-1 cursor-pointer shadow-2xs transition-colors"
+                          title="View & Print Voucher (ভাউচার দেখুন ও প্রিন্ট করুন)"
+                        >
+                          <FileText className="w-3 h-3 text-rose-600" />
+                          <span>Voucher</span>
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
