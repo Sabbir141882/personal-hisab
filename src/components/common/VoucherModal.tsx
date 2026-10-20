@@ -1,11 +1,10 @@
 import React from 'react';
 import {
-  Building,
-  CreditCard,
+  Building2,
+  CheckCircle2,
   FileText,
   Printer,
-  Tag,
-  User,
+  ShieldCheck,
   X,
 } from 'lucide-react';
 import { Account, Category, DebtReceivable, Transaction, UserSettings } from '../../types/finance';
@@ -170,19 +169,19 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
   const getVoucherTitle = () => {
     switch (voucher.voucherType) {
       case 'credit':
-        return { en: 'CREDIT VOUCHER', bn: 'জমা / আয় ভাউচার' };
+        return { en: 'CREDIT / RECEIPT VOUCHER', bn: 'জমা ও প্রাপ্তি ভাউচার' };
       case 'debit':
-        return { en: 'DEBIT VOUCHER', bn: 'খরচ / ব্যয় ভাউচার' };
+        return { en: 'DEBIT / PAYMENT VOUCHER', bn: 'ডেবিট ও ব্যয় ভাউচার' };
       case 'loan_given':
-        return { en: 'LOAN DISBURSEMENT VOUCHER', bn: 'টাকা প্রদান / ঋণ ভাউচার' };
+        return { en: 'LOAN DISBURSEMENT VOUCHER', bn: 'ঋণ / টাকা প্রদান ভাউচার' };
       case 'loan_received':
-        return { en: 'LOAN RECEIPT VOUCHER', bn: 'টাকা গ্রহণ / ধার ভাউচার' };
+        return { en: 'LOAN RECEIPT VOUCHER', bn: 'ধার / টাকা গ্রহণ ভাউচার' };
       case 'transfer':
-        return { en: 'TRANSFER VOUCHER', bn: 'তহবিল স্থানান্তর ভাউচার' };
+        return { en: 'ACCOUNT TRANSFER VOUCHER', bn: 'তহবিল স্থানান্তর ভাউচার' };
       case 'office':
-        return { en: 'OFFICE ADVANCE & EXPENSE VOUCHER', bn: 'অফিস ভাউচার' };
+        return { en: 'OFFICE ADVANCE & EXPENSE VOUCHER', bn: 'অফিস ব্যয় ভাউচার' };
       default:
-        return { en: 'PAYMENT VOUCHER', bn: 'ভাউচার' };
+        return { en: 'PAYMENT VOUCHER', bn: 'অফিসিয়াল ভাউচার' };
     }
   };
 
@@ -190,22 +189,22 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
   const totalAmount = voucher.amount + (voucher.fee || 0);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
       {/* Container Dialog */}
       <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto max-h-[96vh]">
         
         {/* Top Action Bar (hidden in print) */}
         <div className="no-print bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-sky-500/20 rounded-lg text-sky-400">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-400 border border-emerald-500/30">
               <FileText className="w-5 h-5" />
             </div>
             <div>
               <span className="font-bold text-sm tracking-wide block">
-                Official Voucher (5.5" × 4.25" on A4 Page)
+                Executive Official Voucher (5.5" × 4.25" Format)
               </span>
               <span className="text-[11px] text-slate-300 block">
-                A4 সাইজের পেজে একটি ৫.৫" × ৪.২৫" ভাউচার প্রিন্ট হবে (বাকি অংশ ব্লাঙ্ক/সাদা থাকবে)
+                A4 পেজে ১টি প্রফেশনাল কর্পোরেট ভাউচার প্রিন্ট করার জন্য প্রস্তুত
               </span>
             </div>
           </div>
@@ -213,7 +212,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer shadow-sm transition-colors"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
             >
               <Printer className="w-4 h-4" />
               <span>Print Voucher (প্রিন্ট করুন)</span>
@@ -228,197 +227,215 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
         </div>
 
         {/* Scrollable Modal Body showing preview */}
-        <div className="p-4 sm:p-6 overflow-y-auto bg-slate-100 flex flex-col items-center justify-center min-h-[420px]">
+        <div className="p-4 sm:p-6 overflow-y-auto bg-slate-100/90 flex flex-col items-center justify-center min-h-[440px]">
           
-          <div className="no-print mb-2 text-center text-xs text-slate-500 font-medium">
-            📄 Print Dimensions: Standard 5.5 Inch × 4.25 Inch (A4 Page Top Left)
+          <div className="no-print mb-3 text-center text-xs text-slate-500 font-medium flex items-center gap-1.5 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-2xs">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Official Accounting Ledger Format · Print Size: 5.5" × 4.25"</span>
           </div>
 
           {/* THE PRINTABLE VOUCHER (Targeted by #printable-voucher in CSS) */}
           <div
             id="printable-voucher"
-            className="bg-white p-4 rounded-lg border-2 border-slate-900 shadow-md space-y-3 text-slate-900 font-sans text-xs w-full max-w-[5.5in] box-border"
+            className="bg-white p-4 rounded-md border-2 border-slate-900 shadow-md text-slate-900 font-sans text-xs w-full max-w-[5.5in] box-border relative flex flex-col justify-between"
+            style={{ minHeight: '4.25in' }}
           >
-            {/* Top Header / Branding */}
-            <div className="border-b border-slate-900 pb-2 flex flex-row items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-black tracking-tight text-slate-950 uppercase font-mono leading-none">
-                    {userSettings.appName || 'MY FINANCE'}
-                  </h1>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded border border-slate-900 bg-amber-100 text-amber-950">
-                    OFFICIAL VOUCHER
-                  </span>
-                </div>
-                <p className="text-[11px] font-semibold text-slate-700 mt-1">
-                  Owner: {userSettings.userName || 'Sabbir Ahmed'}
-                  {userSettings.userEmail ? ` · ${userSettings.userEmail}` : ''}
-                </p>
-              </div>
-
-              {/* Voucher Title & Number */}
-              <div className="text-right shrink-0">
-                <div className="inline-block border border-slate-900 px-2.5 py-0.5 bg-slate-100 rounded">
-                  <span className="block text-[11px] font-black tracking-wider text-slate-950">
-                    {vInfo.en} ({vInfo.bn})
-                  </span>
-                </div>
-                <div className="mt-1 space-y-0.5 text-[11px] font-mono">
-                  <p className="leading-tight">
-                    <span className="text-slate-500 font-sans font-medium">No:</span>{' '}
-                    <span className="font-bold text-slate-950">{voucher.voucherNo}</span>
-                    <span className="text-slate-500 font-sans font-medium ml-2">Date:</span>{' '}
-                    <span className="font-semibold text-slate-900">{formatDate(voucher.date)}</span>
+            {/* 1. ELEGANT HEADER / BRANDING & VOUCHER TITLE */}
+            <div>
+              <div className="border-b-2 border-slate-900 pb-2.5 flex flex-row items-start justify-between gap-2">
+                {/* Organization Details */}
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-base font-black tracking-wider text-slate-950 uppercase font-mono leading-none">
+                      {userSettings.appName || 'MY FINANCE'}
+                    </h1>
+                    <span className="text-[9px] font-bold px-1.5 py-0.2 bg-slate-900 text-white rounded">
+                      OFFICIAL
+                    </span>
+                  </div>
+                  <p className="text-[10px] font-medium text-slate-600 leading-tight">
+                    {userSettings.userName || 'Md Sabbir Ahmed'}
+                    {userSettings.userEmail ? ` · ${userSettings.userEmail}` : ''}
                   </p>
                 </div>
-              </div>
-            </div>
 
-            {/* Grid Information: Person/Org, Category, Method, Ref */}
-            <div className="grid grid-cols-2 gap-2 text-[11px]">
-              {/* Person / Organization */}
-              <div className="bg-slate-50 p-2 rounded border border-slate-300">
-                <span className="text-[9px] uppercase font-bold text-slate-500 block">
-                  Person / Organization (ব্যক্তি বা প্রতিষ্ঠান)
-                </span>
-                <p className="text-xs font-bold text-slate-950 flex items-center gap-1 mt-0.5">
-                  <User className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-                  <span>{voucher.personOrOrganization}</span>
-                </p>
-              </div>
-
-              {/* Category & Subcategory */}
-              <div className="bg-slate-50 p-2 rounded border border-slate-300">
-                <span className="text-[9px] uppercase font-bold text-slate-500 block">
-                  Category & Classification (ক্যাটাগরি)
-                </span>
-                <p className="text-xs font-bold text-slate-950 flex items-center gap-1 mt-0.5">
-                  <Tag className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>{voucher.categoryName}</span>
-                  {voucher.subcategoryName && (
-                    <span className="text-[10px] text-slate-600 font-normal">({voucher.subcategoryName})</span>
-                  )}
-                </p>
+                {/* Right Voucher Designation Box */}
+                <div className="text-right shrink-0">
+                  <div className="bg-slate-900 text-white px-2.5 py-1 rounded shadow-2xs text-right inline-block">
+                    <span className="block text-[10px] font-black tracking-wider uppercase font-mono leading-none">
+                      {vInfo.en}
+                    </span>
+                    <span className="block text-[9px] font-normal text-slate-200 mt-0.5 leading-none">
+                      {vInfo.bn}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-[10px] font-mono font-medium text-slate-900">
+                    <span>No: </span>
+                    <strong className="font-bold text-slate-950">{voucher.voucherNo}</strong>
+                    <span className="mx-1.5">|</span>
+                    <span>Date: </span>
+                    <strong className="font-bold text-slate-950">{formatDate(voucher.date)}</strong>
+                  </div>
+                </div>
               </div>
 
-              {/* Payment Account */}
-              <div className="bg-slate-50 p-2 rounded border border-slate-300">
-                <span className="text-[9px] uppercase font-bold text-slate-500 block">
-                  Payment Account (হিসাব / মাধ্যম)
-                </span>
-                <p className="text-[11px] font-bold text-slate-950 flex items-center gap-1 mt-0.5">
-                  <CreditCard className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                  <span>{voucher.accountName}</span>
-                  {voucher.destinationAccountName && (
-                    <span className="text-slate-600 font-normal">→ {voucher.destinationAccountName}</span>
-                  )}
-                </p>
+              {/* 2. EXECUTIVE LEDGER METADATA GRID */}
+              <div className="my-2.5 border border-slate-300 rounded bg-slate-50/60 p-2 text-[10px] grid grid-cols-2 gap-x-4 gap-y-1.5">
+                <div className="flex justify-between items-baseline border-b border-slate-200 pb-1">
+                  <span className="font-bold text-slate-600 uppercase text-[9px]">
+                    Person / Org (ব্যক্তি/প্রতিষ্ঠান):
+                  </span>
+                  <span className="font-bold text-slate-950 text-[10.5px]">
+                    {voucher.personOrOrganization}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-baseline border-b border-slate-200 pb-1">
+                  <span className="font-bold text-slate-600 uppercase text-[9px]">
+                    Category (ক্যাটাগরি):
+                  </span>
+                  <span className="font-bold text-slate-950 text-[10.5px]">
+                    {voucher.categoryName}
+                    {voucher.subcategoryName && (
+                      <span className="font-normal text-slate-600 text-[9px] ml-1">
+                        ({voucher.subcategoryName})
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-baseline border-b border-slate-200 pb-1 sm:border-b-0 sm:pb-0">
+                  <span className="font-bold text-slate-600 uppercase text-[9px]">
+                    Payment Account (মাধ্যম):
+                  </span>
+                  <span className="font-bold text-slate-950 text-[10.5px]">
+                    {voucher.accountName}
+                    {voucher.destinationAccountName && (
+                      <span className="font-normal text-slate-600 text-[9px]"> → {voucher.destinationAccountName}</span>
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-baseline">
+                  <span className="font-bold text-slate-600 uppercase text-[9px]">
+                    Ref & Due (রেফারেন্স/মেয়াদ):
+                  </span>
+                  <span className="font-semibold text-slate-900 text-[10px] font-mono">
+                    Ref: {voucher.referenceNumber || 'N/A'}
+                    {voucher.dueDate && (
+                      <span className="text-rose-700 font-bold ml-1.5">Due: {formatDate(voucher.dueDate)}</span>
+                    )}
+                  </span>
+                </div>
               </div>
 
-              {/* Reference & Due Date */}
-              <div className="bg-slate-50 p-2 rounded border border-slate-300">
-                <span className="text-[9px] uppercase font-bold text-slate-500 block">
-                  Ref & Due Date (রেফারেন্স / মেয়াদ)
-                </span>
-                <p className="text-[11px] font-semibold text-slate-900 mt-0.5">
-                  Ref: <span className="font-mono">{voucher.referenceNumber || 'N/A'}</span>
-                  {voucher.dueDate && (
-                    <span className="text-rose-700 ml-2">Due: {formatDate(voucher.dueDate)}</span>
-                  )}
-                </p>
-              </div>
-            </div>
-
-            {/* Financial Particulars Table */}
-            <div>
-              <table className="w-full text-left border-collapse border border-slate-900 text-[11px]">
-                <thead>
-                  <tr className="bg-slate-100 text-slate-900 font-bold uppercase text-[10px] border-b border-slate-900">
-                    <th className="border border-slate-900 py-1 px-2 w-8 text-center">SL</th>
-                    <th className="border border-slate-900 py-1 px-2">Description & Particulars (বিবরণ)</th>
-                    <th className="border border-slate-900 py-1 px-2 w-28">Category</th>
-                    <th className="border border-slate-900 py-1 px-2 w-28 text-right">Amount (BDT)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-slate-900 py-1.5 px-2 text-center font-mono">01</td>
-                    <td className="border border-slate-900 py-1.5 px-2">
-                      <div className="font-bold text-slate-900 text-xs">{voucher.description}</div>
-                      {voucher.notes && (
-                        <div className="text-[10px] text-slate-600 italic">Note: {voucher.notes}</div>
-                      )}
-                    </td>
-                    <td className="border border-slate-900 py-1.5 px-2 font-medium text-slate-800">
-                      {voucher.categoryName}
-                    </td>
-                    <td className="border border-slate-900 py-1.5 px-2 text-right font-mono font-bold text-slate-900 text-xs">
-                      ৳ {voucher.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </td>
-                  </tr>
-
-                  {voucher.fee && voucher.fee > 0 ? (
+              {/* 3. FORMAL PARTICULARS LEDGER TABLE */}
+              <div className="my-2">
+                <table className="w-full text-left border-collapse border border-slate-900 text-[10px]">
+                  <thead>
+                    <tr className="bg-slate-900 text-white font-bold uppercase text-[9px] tracking-wider">
+                      <th className="border border-slate-900 py-1 px-1.5 w-7 text-center font-mono">SL</th>
+                      <th className="border border-slate-900 py-1 px-2">Description & Particulars (বিবরণ)</th>
+                      <th className="border border-slate-900 py-1 px-2 w-28">Head / Category</th>
+                      <th className="border border-slate-900 py-1 px-2 w-24 text-right">Amount (BDT)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
                     <tr>
-                      <td className="border border-slate-900 py-1 px-2 text-center font-mono">02</td>
-                      <td className="border border-slate-900 py-1 px-2 font-medium text-slate-700">
-                        Transaction Fee / Charge
+                      <td className="border border-slate-900 py-1.5 px-1.5 text-center font-mono font-bold">01</td>
+                      <td className="border border-slate-900 py-1.5 px-2">
+                        <div className="font-bold text-slate-950 text-[11px] leading-tight">{voucher.description}</div>
+                        {voucher.notes && (
+                          <div className="text-[9px] text-slate-600 italic mt-0.5">Note: {voucher.notes}</div>
+                        )}
                       </td>
-                      <td className="border border-slate-900 py-1 px-2 text-slate-500">Service Fee</td>
-                      <td className="border border-slate-900 py-1 px-2 text-right font-mono font-medium text-slate-800">
-                        ৳ {voucher.fee.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      <td className="border border-slate-900 py-1.5 px-2 font-semibold text-slate-800">
+                        {voucher.categoryName}
+                      </td>
+                      <td className="border border-slate-900 py-1.5 px-2 text-right font-mono font-extrabold text-slate-950 text-[11px]">
+                        ৳ {voucher.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </td>
                     </tr>
-                  ) : null}
 
-                  {/* Total Row */}
-                  <tr className="bg-slate-100 font-bold border-t border-slate-900 text-xs">
-                    <td colSpan={3} className="border border-slate-900 py-1.5 px-2 text-right uppercase tracking-wider">
-                      Net Total (সর্বমোট):
-                    </td>
-                    <td className="border border-slate-900 py-1.5 px-2 text-right font-mono font-extrabold text-slate-950 text-xs">
-                      ৳ {totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                    {voucher.fee && voucher.fee > 0 ? (
+                      <tr>
+                        <td className="border border-slate-900 py-1 px-1.5 text-center font-mono">02</td>
+                        <td className="border border-slate-900 py-1 px-2 font-medium text-slate-700">
+                          Transaction Fee / Service Charge
+                        </td>
+                        <td className="border border-slate-900 py-1 px-2 text-slate-600">Service Charge</td>
+                        <td className="border border-slate-900 py-1 px-2 text-right font-mono font-bold text-slate-900">
+                          ৳ {voucher.fee.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </td>
+                      </tr>
+                    ) : null}
 
-              {/* Amount in words */}
-              <div className="mt-1.5 p-1.5 bg-slate-50 border border-slate-300 rounded text-[11px] flex items-center justify-between">
-                <span className="font-bold text-slate-700 uppercase text-[9px]">Amount in Words:</span>
-                <span className="font-bold text-slate-950 italic font-serif">{amountToWords(totalAmount)}</span>
+                    {/* NET TOTAL ROW */}
+                    <tr className="bg-slate-100 font-black border-t-2 border-slate-900 text-[11px]">
+                      <td colSpan={3} className="border border-slate-900 py-1 px-2 text-right uppercase tracking-wider text-slate-900">
+                        Net Total Amount (সর্বমোট টাকা):
+                      </td>
+                      <td className="border border-slate-900 py-1 px-2 text-right font-mono font-black text-slate-950 text-xs">
+                        ৳ {totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* AMOUNT IN WORDS */}
+                <div className="mt-1.5 p-1.5 bg-slate-50 border border-slate-300 rounded text-[10px] flex items-center justify-between">
+                  <span className="font-bold text-slate-600 uppercase text-[8.5px] shrink-0">In Words:</span>
+                  <span className="font-bold text-slate-950 italic font-serif text-[10.5px] truncate ml-2">
+                    {amountToWords(totalAmount)}
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Official Signatures Footer */}
-            <div className="pt-5 grid grid-cols-3 gap-4 text-center text-[10px]">
-              <div>
-                <div className="border-t border-dashed border-slate-900 pt-1 font-bold text-slate-900">
-                  Prepared By (প্রস্তুতকারী)
+            {/* 4. OFFICIAL SIGNATURES BLOCK */}
+            <div className="pt-7">
+              <div className="grid grid-cols-3 gap-6 text-center text-[9.5px]">
+                <div>
+                  <div className="border-t-2 border-slate-900 pt-1 font-bold text-slate-950 uppercase tracking-tight">
+                    Prepared By
+                  </div>
+                  <div className="text-[8.5px] font-medium text-slate-600">
+                    {userSettings.userName || 'Accountant'}
+                  </div>
                 </div>
-                <div className="text-[9px] text-slate-500">{userSettings.userName || 'Accountant'}</div>
+
+                <div>
+                  <div className="border-t-2 border-slate-900 pt-1 font-bold text-slate-950 uppercase tracking-tight">
+                    Checked / Approved
+                  </div>
+                  <div className="text-[8.5px] font-medium text-slate-600">
+                    Manager / Authority
+                  </div>
+                </div>
+
+                <div>
+                  <div className="border-t-2 border-slate-900 pt-1 font-bold text-slate-950 uppercase tracking-tight">
+                    Receiver's Signature
+                  </div>
+                  <div className="text-[8.5px] font-medium text-slate-600 truncate">
+                    {voucher.personOrOrganization}
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <div className="border-t border-dashed border-slate-900 pt-1 font-bold text-slate-900">
-                  Verified / Approved
-                </div>
-                <div className="text-[9px] text-slate-500">Management</div>
-              </div>
-
-              <div>
-                <div className="border-t border-dashed border-slate-900 pt-1 font-bold text-slate-900">
-                  Received By / Counterparty
-                </div>
-                <div className="text-[9px] text-slate-500 truncate">{voucher.personOrOrganization}</div>
+              {/* Watermark Footer */}
+              <div className="mt-2 pt-1 border-t border-slate-200 text-center text-[7.5px] text-slate-400 font-mono tracking-wider uppercase">
+                Official Computer Generated Financial Voucher · Valid with Official Stamp & Signatures
               </div>
             </div>
+
           </div>
         </div>
 
         {/* Modal Bottom Footer (hidden in print) */}
         <div className="no-print bg-white px-5 py-3 border-t border-slate-200 flex items-center justify-between shrink-0">
           <p className="text-xs text-slate-500">
-            A4 Page Layout: Prints a single 5.5" × 4.25" voucher at the top of the A4 page; remaining page area stays blank.
+            A4 Print Layout: Standard 5.5" × 4.25" Executive Corporate Voucher.
           </p>
           <div className="flex items-center gap-2">
             <button
