@@ -35,6 +35,24 @@ const STORAGE_KEYS = {
   AUDIT_LOGS: 'myfinance_audit_logs_v4',
 };
 
+const ZERO_RESET_KEY = 'planet_finance_zero_reset_v5';
+
+// Enforce clean slate with 0 data
+if (typeof window !== 'undefined' && !localStorage.getItem(ZERO_RESET_KEY)) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.OFFICE_FUNDS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.BUDGETS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.SAVINGS_GOALS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.DEBTS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.RECURRING, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(INITIAL_ACCOUNTS));
+    localStorage.setItem(ZERO_RESET_KEY, 'true');
+  } catch (e) {
+    console.error('Zero reset failed', e);
+  }
+}
+
 // Helper function to read from LocalStorage
 const getStorageItem = <T>(key: string, fallback: T): T => {
   try {

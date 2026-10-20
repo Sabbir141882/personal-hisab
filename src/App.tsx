@@ -40,6 +40,7 @@ import { TransactionFormModal } from './components/common/TransactionFormModal';
 import { OfficeFundModal } from './components/common/OfficeFundModal';
 import { TransferModal } from './components/common/TransferModal';
 import { ApproveLockModal } from './components/common/ApproveLockModal';
+import { InAppUserGuideModal } from './components/common/InAppUserGuideModal';
 import {
   VoucherData,
   VoucherModal,
@@ -83,6 +84,19 @@ export function App() {
   const [isOfficeModalOpen, setIsOfficeModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [isUserGuideOpen, setIsUserGuideOpen] = useState(false);
+  const [isUserGuideHidden, setIsUserGuideHidden] = useState(true);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('planet_finance_theme') as 'dark' | 'light') || 'dark';
+  });
+
+  const handleToggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('planet_finance_theme', next);
+      return next;
+    });
+  };
 
   // Voucher Preview & Print Modal State
   const [activeVoucher, setActiveVoucher] = useState<VoucherData | null>(null);
@@ -372,6 +386,7 @@ export function App() {
             onOpenApproveModal={(ids) => handleOpenApproveModal(ids)}
             onSelectModule={setActiveModule}
             onViewVoucher={handleViewTransactionVoucher}
+            onOpenUserGuide={() => setIsUserGuideOpen(true)}
           />
         );
 
@@ -508,23 +523,26 @@ export function App() {
 
       case 'savings':
         return (
-          <SavingsModule
-            savingsGoals={savingsGoals}
+          <DashboardModule
+            summary={summary}
+            transactions={transactions}
+            accounts={calculatedAccounts}
+            officeFunds={officeFunds}
+            budgets={budgets}
+            categories={categories}
+            debts={debts}
             userSettings={userSettings}
-            onSaveGoal={(gData) => {
-              const newG: SavingsGoal = {
-                id: 'goal_' + Date.now(),
-                title: gData.title || 'Savings Goal',
-                targetAmount: gData.targetAmount || 0,
-                currentAmount: gData.currentAmount || 0,
-                targetDate: gData.targetDate || '2027-12-31',
-                category: 'General',
-                status: 'active',
-              };
-              const updated = [...savingsGoals, newG];
-              saveSavingsGoals(updated);
-              setSavingsGoals(updated);
+            onOpenTxModal={(type) => {
+              setDefaultTxType(type || 'personal_expense');
+              setEditingTransaction(null);
+              setIsTxModalOpen(true);
             }}
+            onOpenOfficeModal={() => setIsOfficeModalOpen(true)}
+            onOpenTransferModal={() => setIsTransferModalOpen(true)}
+            onOpenApproveModal={(ids) => handleOpenApproveModal(ids)}
+            onSelectModule={setActiveModule}
+            onViewVoucher={handleViewTransactionVoucher}
+            onOpenUserGuide={() => setIsUserGuideOpen(true)}
           />
         );
 
@@ -626,7 +644,7 @@ export function App() {
   const unapprovedCount = transactions.filter((t) => t.status === 'completed' && !t.isApproved).length;
 
   return (
-    <div className="flex h-screen bg-slate-100 font-sans text-slate-800 antialiased overflow-hidden">
+    <div className={`flex h-screen font-sans antialiased overflow-hidden transition-colors duration-200 ${theme === 'light' ? 'light-mode bg-slate-100 text-slate-900' : 'bg-slate-950 text-slate-100'}`}>
       {/* Sidebar Navigation */}
       <Sidebar
         activeModule={activeModule}
@@ -650,6 +668,11 @@ export function App() {
           onOpenOfficeModal={() => setIsOfficeModalOpen(true)}
           onOpenTransferModal={() => setIsTransferModalOpen(true)}
           setActiveModule={setActiveModule}
+          onOpenUserGuide={() => setIsUserGuideOpen(true)}
+          isUserGuideHidden={isUserGuideHidden}
+          onToggleUserGuideHidden={() => setIsUserGuideHidden((prev) => !prev)}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
         />
 
         <main className="p-6 flex-1">{renderModuleView()}</main>
@@ -690,6 +713,18 @@ export function App() {
         onConfirmApprove={handleConfirmApprove}
         unapprovedCount={approveTargetTxIds ? approveTargetTxIds.length : unapprovedCount}
         isSingleTx={approveTargetTxIds?.length === 1}
+      />
+
+      <InAppUserGuideModal
+        isOpen={isUserGuideOpen}
+        onClose={() => setIsUserGuideOpen(false)}
+        onNavigateModule={(mod) => setActiveModule(mod as ModuleId)}
+        onOpenTxModal={(type) => {
+          setDefaultTxType(type || 'personal_expense');
+          setEditingTransaction(null);
+          setIsTxModalOpen(true);
+        }}
+        onOpenTransferModal={() => setIsTransferModalOpen(true)}
       />
 
       {/* Official Voucher Preview & Print Modal */}

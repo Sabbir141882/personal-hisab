@@ -12,29 +12,31 @@ import {
 } from '../types/finance';
 
 // Currency formatting utility for Bangladeshi Taka (BDT)
-export const formatCurrency = (amount: number, symbol = 'BDT'): string => {
-  const cleanSymbol = (!symbol || symbol === '৳' || symbol.includes('৳') || symbol.toLowerCase().includes('taka')) ? 'BDT' : symbol;
-  if (isNaN(amount) || amount === null || amount === undefined) {
-    return `${cleanSymbol} 0.00`;
+export const formatCurrency = (amount: number, symbol = '৳'): string => {
+  const displaySymbol = symbol || '৳';
+  if (isNaN(amount) || amount === null || amount === undefined || amount === 0) {
+    return `${displaySymbol} 0`;
   }
   const isNegative = amount < 0;
   const absAmount = Math.abs(amount);
+  const hasDecimals = absAmount % 1 !== 0;
   const formatted = absAmount.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
+    minimumFractionDigits: hasDecimals ? 2 : 0,
     maximumFractionDigits: 2,
   });
-  return `${isNegative ? '-' : ''}${cleanSymbol} ${formatted}`;
+  return `${isNegative ? '-' : ''}${displaySymbol} ${formatted}`;
 };
 
 // Pure number formatting utility for tables without currency symbol prefix
 export const formatNumberOnly = (amount: number): string => {
-  if (isNaN(amount) || amount === null || amount === undefined) {
-    return '0.00';
+  if (isNaN(amount) || amount === null || amount === undefined || amount === 0) {
+    return '0';
   }
   const isNegative = amount < 0;
   const absAmount = Math.abs(amount);
+  const hasDecimals = absAmount % 1 !== 0;
   const formatted = absAmount.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
+    minimumFractionDigits: hasDecimals ? 2 : 0,
     maximumFractionDigits: 2,
   });
   return `${isNegative ? '-' : ''}${formatted}`;

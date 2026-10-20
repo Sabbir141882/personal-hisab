@@ -5,27 +5,337 @@
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: #0f172a;
+    color: #f8fafc;
   }
 
   .font-mono, [data-tabular] {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-variant-numeric: tabular-nums;
   }
 }
 
-/* Custom subtle scrollbars */
+/* Custom Sleek Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #0f172a;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
+  background: #334155;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
+  background: #475569;
+}
+
+/* Light Mode Comprehensive Theme Overrides */
+.light-mode {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.light-mode header {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.light-mode aside {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Light mode sidebar text */
+.light-mode aside .text-slate-300 {
+  color: #334155 !important;
+}
+.light-mode aside .text-slate-400 {
+  color: #64748b !important;
+}
+
+/* Sidebar active module item */
+.light-mode aside .bg-indigo-600\/90 {
+  background-color: #4f46e5 !important;
+  color: #ffffff !important;
+}
+.light-mode aside .bg-indigo-600\/90 * {
+  color: #ffffff !important;
+}
+
+/* Cards & containers in Light Mode */
+.light-mode .bg-slate-900,
+.light-mode .bg-slate-950,
+.light-mode .bg-slate-900\/90,
+.light-mode .bg-slate-900\/80,
+.light-mode .bg-slate-900\/70,
+.light-mode .bg-slate-900\/60,
+.light-mode .bg-slate-900\/50,
+.light-mode .bg-slate-950\/80,
+.light-mode .bg-slate-950\/60 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+}
+
+/* Inside light mode white cards, headings and text must be dark slate */
+.light-mode .bg-slate-900 .text-white,
+.light-mode .bg-slate-950 .text-white,
+.light-mode .bg-slate-900 h1,
+.light-mode .bg-slate-900 h2,
+.light-mode .bg-slate-900 h3,
+.light-mode .bg-slate-900 h4,
+.light-mode .bg-slate-900 .text-slate-100,
+.light-mode .bg-slate-900 .text-slate-200 {
+  color: #0f172a !important;
+}
+
+.light-mode .bg-slate-900 .text-slate-300 {
+  color: #1e293b !important;
+}
+
+.light-mode .bg-slate-900 .text-slate-400 {
+  color: #475569 !important;
+}
+
+/* Sub-card secondary backgrounds in Light Mode */
+.light-mode .bg-slate-800,
+.light-mode .bg-slate-800\/80,
+.light-mode .bg-slate-800\/60,
+.light-mode .bg-slate-800\/50,
+.light-mode .bg-slate-800\/40,
+.light-mode .bg-slate-800\/30 {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light-mode .bg-slate-800 .text-white,
+.light-mode .bg-slate-800 .text-slate-100,
+.light-mode .bg-slate-800 .text-slate-200,
+.light-mode .bg-slate-800 .text-slate-300 {
+  color: #0f172a !important;
+}
+
+.light-mode .bg-slate-800 .text-slate-400 {
+  color: #475569 !important;
+}
+
+.light-mode .bg-slate-700,
+.light-mode .bg-slate-700\/60,
+.light-mode .bg-slate-700\/50 {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* GRADIENT BANNERS (e.g. Cash in hand banner, promo cards) - ENSURE CRISP HIGH CONTRAST DARK EMERALD GRADIENT + PURE WHITE TEXT */
+.light-mode .bg-gradient-to-r,
+.light-mode .bg-gradient-to-br,
+.light-mode .bg-gradient-to-b {
+  background-image: linear-gradient(to right, #044e3b, #065f46, #0f172a) !important;
+  color: #ffffff !important;
+  border-color: #059669 !important;
+}
+
+/* Override child text colors inside gradient banners so they stay WHITE & BRIGHT */
+.light-mode .bg-gradient-to-r *,
+.light-mode .bg-gradient-to-br *,
+.light-mode .bg-gradient-to-b * {
+  color: inherit;
+}
+
+.light-mode .bg-gradient-to-r .text-white,
+.light-mode .bg-gradient-to-r h2,
+.light-mode .bg-gradient-to-r h3,
+.light-mode .bg-gradient-to-r .text-slate-100,
+.light-mode .bg-gradient-to-r .text-slate-200,
+.light-mode .bg-gradient-to-r .text-slate-300 {
+  color: #ffffff !important;
+}
+
+.light-mode .bg-gradient-to-r .text-slate-400 {
+  color: #e2e8f0 !important;
+}
+
+.light-mode .bg-gradient-to-r .text-emerald-300,
+.light-mode .bg-gradient-to-r .text-emerald-400 {
+  color: #6ee7b7 !important;
+}
+
+.light-mode .bg-gradient-to-r .bg-emerald-900\/60,
+.light-mode .bg-gradient-to-r .bg-emerald-900\/80 {
+  background-color: rgba(6, 78, 59, 0.8) !important;
+  border-color: #10b981 !important;
+}
+
+/* BUTTONS WITH SOLID ACCENT BG (e.g. bg-emerald-600, bg-rose-600, bg-indigo-600, bg-amber-600) MUST ALWAYS HAVE WHITE TEXT */
+.light-mode button.bg-emerald-600,
+.light-mode button.bg-emerald-500,
+.light-mode button.bg-rose-600,
+.light-mode button.bg-rose-500,
+.light-mode button.bg-indigo-600,
+.light-mode button.bg-indigo-500,
+.light-mode button.bg-amber-600,
+.light-mode button.bg-amber-500,
+.light-mode button.bg-sky-600,
+.light-mode button.bg-sky-500 {
+  color: #ffffff !important;
+}
+
+.light-mode button.bg-emerald-600 *,
+.light-mode button.bg-rose-600 *,
+.light-mode button.bg-indigo-600 *,
+.light-mode button.bg-amber-600 * {
+  color: #ffffff !important;
+}
+
+/* SHORTCUT CHIPS IN LIGHT MODE (bg-amber-950/60 -> soft pastel backgrounds with strong readable dark text) */
+.light-mode .bg-emerald-950\/60,
+.light-mode .bg-emerald-950\/40,
+.light-mode .bg-emerald-950\/80 {
+  background-color: #d1fae5 !important;
+  border-color: #6ee7b7 !important;
+  color: #064e3b !important;
+}
+.light-mode .bg-emerald-950\/60 *,
+.light-mode .bg-emerald-950\/40 *,
+.light-mode .bg-emerald-950\/80 * {
+  color: #064e3b !important;
+}
+
+.light-mode .bg-rose-950\/60,
+.light-mode .bg-rose-950\/40,
+.light-mode .bg-rose-950\/80 {
+  background-color: #ffe4e6 !important;
+  border-color: #fca5a5 !important;
+  color: #881337 !important;
+}
+.light-mode .bg-rose-950\/60 *,
+.light-mode .bg-rose-950\/40 *,
+.light-mode .bg-rose-950\/80 * {
+  color: #881337 !important;
+}
+
+.light-mode .bg-amber-950\/60,
+.light-mode .bg-amber-950\/40,
+.light-mode .bg-amber-950\/80 {
+  background-color: #fef3c7 !important;
+  border-color: #fcd34d !important;
+  color: #78350f !important;
+}
+.light-mode .bg-amber-950\/60 *,
+.light-mode .bg-amber-950\/40 *,
+.light-mode .bg-amber-950\/80 * {
+  color: #78350f !important;
+}
+
+.light-mode .bg-indigo-950\/60,
+.light-mode .bg-indigo-950\/40,
+.light-mode .bg-indigo-950\/80 {
+  background-color: #e0e7ff !important;
+  border-color: #a5b4fc !important;
+  color: #312e81 !important;
+}
+.light-mode .bg-indigo-950\/60 *,
+.light-mode .bg-indigo-950\/40 *,
+.light-mode .bg-indigo-950\/80 * {
+  color: #312e81 !important;
+}
+
+.light-mode .bg-sky-950\/60,
+.light-mode .bg-sky-950\/40,
+.light-mode .bg-sky-950\/80 {
+  background-color: #e0f2fe !important;
+  border-color: #7dd3fc !important;
+  color: #0c4a6e !important;
+}
+.light-mode .bg-sky-950\/60 *,
+.light-mode .bg-sky-950\/40 *,
+.light-mode .bg-sky-950\/80 * {
+  color: #0c4a6e !important;
+}
+
+/* Modals & Dialogs in Light Mode */
+.light-mode .fixed .bg-slate-900,
+.light-mode .fixed .bg-slate-950 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.light-mode .fixed .bg-slate-900 *,
+.light-mode .fixed .bg-slate-950 * {
+  color: inherit;
+}
+
+.light-mode .fixed label,
+.light-mode .fixed h1,
+.light-mode .fixed h2,
+.light-mode .fixed h3 {
+  color: #0f172a !important;
+}
+
+/* Form inputs & selects in Light Mode */
+.light-mode input,
+.light-mode select,
+.light-mode textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light-mode input::placeholder,
+.light-mode textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+.light-mode input:focus,
+.light-mode select:focus,
+.light-mode textarea:focus {
+  border-color: #4f46e5 !important;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2) !important;
+}
+
+.light-mode select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* Tables in Light Mode */
+.light-mode table,
+.light-mode th,
+.light-mode td {
+  border-color: #e2e8f0 !important;
+}
+
+.light-mode th {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+}
+
+.light-mode tr:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.light-mode td {
+  color: #1e293b !important;
+}
+
+/* Scrollbars in Light Mode */
+.light-mode ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.light-mode ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+.light-mode ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* Official Print Styles for Vouchers - Single 5.5" x 4.25" Voucher on A4 Sheet */
@@ -69,3 +379,4 @@
     display: none !important;
   }
 }
+

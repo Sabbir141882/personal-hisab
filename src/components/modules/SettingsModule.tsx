@@ -11,7 +11,7 @@ export const SettingsModule: React.FC<SettingsModuleProps> = ({
   userSettings,
   onSaveSettings,
 }) => {
-  const [appName, setAppName] = useState(userSettings.appName || 'My Finance');
+  const [appName, setAppName] = useState(userSettings.appName || 'Planet Finance');
   const [userName, setUserName] = useState(userSettings.userName || 'Sabbir Ahmed');
   const [userEmail, setUserEmail] = useState(userSettings.userEmail || 'sabbir@myfinance.bd');
   const [approvalPassword, setApprovalPassword] = useState(userSettings.approvalPassword || 'Sabbir@95AR');
