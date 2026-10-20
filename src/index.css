@@ -28,11 +28,11 @@
   background: rgba(148, 163, 184, 0.5);
 }
 
-/* Official Print Styles for Vouchers - Exact 5.5" x 4.25" Standard Voucher Dimensions */
+/* Official Print Styles for Vouchers - Single 5.5" x 4.25" Voucher on A4 Sheet */
 @media print {
   @page {
-    size: 5.5in 4.25in;
-    margin: 2mm;
+    size: A4 portrait;
+    margin: 10mm;
   }
   body {
     background: #ffffff !important;
@@ -53,13 +53,13 @@
     width: 5.5in !important;
     max-width: 5.5in !important;
     height: 4.25in !important;
+    max-height: 4.25in !important;
     box-sizing: border-box !important;
     margin: 0 !important;
-    padding: 10px 14px !important;
+    padding: 12px 16px !important;
     background: #ffffff !important;
     color: #000000 !important;
     border: 2px solid #000000 !important;
-    border-radius: 0 !important;
     box-shadow: none !important;
     overflow: hidden !important;
     page-break-after: avoid !important;
