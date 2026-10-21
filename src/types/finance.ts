@@ -135,6 +135,7 @@ export interface Transaction {
   familyMember?: string;
   status: 'completed' | 'pending' | 'reversed';
   isApproved?: boolean; // When approved, entry CANNOT be edited or deleted
+  isUnpassBill?: boolean; // UNPASS BIL hits live balance immediately without approval
   approvedAt?: string;
   createdAt: string;
   updatedAt: string;

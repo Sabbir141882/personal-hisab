@@ -180,6 +180,7 @@ export function App() {
         notes: txData.notes,
         status: 'completed',
         isApproved: false,
+        isUnpassBill: txData.isUnpassBill ?? false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

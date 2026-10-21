@@ -44,6 +44,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
   const [familyMember, setFamilyMember] = useState<string>('');
   const [tagsText, setTagsText] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
+  const [isUnpassBill, setIsUnpassBill] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
@@ -65,6 +66,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
       setFamilyMember(editingTransaction.familyMember || '');
       setTagsText((editingTransaction.tags || []).join(', '));
       setNotes(editingTransaction.notes || '');
+      setIsUnpassBill(editingTransaction.isUnpassBill || false);
     } else {
       setDate(todayStr);
       setTime('12:00');
@@ -78,7 +80,8 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
       setAmount('');
       setFee('0');
-      setSourceAccountId(accounts.find((a) => a.status === 'active')?.id || '');
+      const defaultAcc = accounts.find((a) => a.status === 'active');
+      setSourceAccountId(defaultAcc?.id || '');
       setDestinationAccountId('');
       setCategoryId('');
       setSubcategoryId('');
@@ -89,6 +92,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
       setFamilyMember('');
       setTagsText('');
       setNotes('');
+      setIsUnpassBill(defaultAcc?.type === 'unpass_bill' || defaultAcc?.name.toLowerCase().includes('unpass') || false);
     }
     setErrorMessage('');
   }, [editingTransaction, isOpen, defaultType, accounts]);
@@ -159,6 +163,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         tags: tagsArray,
         status: editingTransaction?.status || 'completed',
         isApproved: editingTransaction?.isApproved ?? false,
+        isUnpassBill: isUnpassBill,
       },
       submitAction === 'save_and_voucher'
     );
@@ -271,7 +276,14 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
             <select
               required
               value={sourceAccountId}
-              onChange={(e) => setSourceAccountId(e.target.value)}
+              onChange={(e) => {
+                const accId = e.target.value;
+                setSourceAccountId(accId);
+                const selAcc = accounts.find((a) => a.id === accId);
+                if (selAcc && (selAcc.type === 'unpass_bill' || selAcc.name.toLowerCase().includes('unpass'))) {
+                  setIsUnpassBill(true);
+                }
+              }}
               className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
             >
               <option value="">-- Select Account --</option>
@@ -303,6 +315,21 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
               </select>
             </div>
           )}
+        </div>
+
+        {/* UNPASS BIL Option Toggle */}
+        <div className="flex items-center gap-2 p-2.5 bg-amber-50 rounded-lg border border-amber-200">
+          <input
+            type="checkbox"
+            id="isUnpassBill"
+            checked={isUnpassBill}
+            onChange={(e) => setIsUnpassBill(e.target.checked)}
+            className="rounded border-amber-400 text-amber-600 focus:ring-amber-500 cursor-pointer"
+          />
+          <label htmlFor="isUnpassBill" className="text-xs font-semibold text-amber-950 cursor-pointer flex-1">
+            ⚡ UNPASS BIL (লাইভ ব্যালেন্সে সাথে সাথেই জমা/খরচ হবে, পরবর্তীতে অ্যাপ্রুভ করা যাবে)
+          </label>
+        </div>
 
           {/* Related Office Fund Selector if office related */}
           {(type === 'office_expense' ||
@@ -327,7 +354,6 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
               </select>
             </div>
           )}
-        </div>
 
         {/* Row 3: Category & Subcategory */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
