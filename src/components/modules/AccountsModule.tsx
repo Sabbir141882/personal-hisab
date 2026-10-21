@@ -200,20 +200,20 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
       </div>
 
       {/* Inter-Account Transfer History Section */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <ArrowLeftRight className="w-4 h-4 text-sky-600" />
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <ArrowLeftRight className="w-4 h-4 text-sky-400" />
               <span>Inter-Account Transfer History</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5">
               Recent fund transfers between bank accounts, bKash, Nagad, and cash wallets
             </p>
           </div>
           <button
             onClick={onOpenTransferModal}
-            className="px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer border border-sky-200"
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-sky-300 font-semibold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-700"
           >
             <ArrowLeftRight className="w-3 h-3" />
             <span>+ Transfer Funds</span>
@@ -226,11 +226,11 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
 
           if (transferTxs.length === 0) {
             return (
-              <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                <p className="text-xs text-slate-500">No inter-account transfers recorded yet.</p>
+              <div className="text-center py-8 bg-slate-800/50 rounded-xl border border-dashed border-slate-700">
+                <p className="text-xs text-slate-400">No inter-account transfers recorded yet.</p>
                 <button
                   onClick={onOpenTransferModal}
-                  className="mt-2 text-xs font-semibold text-sky-600 hover:text-sky-700 cursor-pointer"
+                  className="mt-2 text-xs font-semibold text-sky-400 hover:underline cursor-pointer"
                 >
                   Make your first transfer
                 </button>
@@ -242,7 +242,7 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+                  <tr className="border-b border-slate-800 bg-slate-800/80 text-slate-300 font-semibold uppercase tracking-wider text-[10px]">
                     <th className="py-2.5 px-3">Date</th>
                     <th className="py-2.5 px-3">From (Source)</th>
                     <th className="py-2.5 px-3">To (Destination)</th>
@@ -251,28 +251,28 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
                     <th className="py-2.5 px-3 text-right">Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
+                <tbody className="divide-y divide-slate-800 text-slate-200">
                   {transferTxs.slice(0, 10).map((tx) => {
                     const srcName = accountMap.get(tx.sourceAccountId) || 'Unknown Account';
                     const destName = tx.destinationAccountId ? accountMap.get(tx.destinationAccountId) || 'Unknown Account' : 'N/A';
                     return (
-                      <tr key={tx.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-2.5 px-3 whitespace-nowrap font-medium text-slate-600">
+                      <tr key={tx.id} className="hover:bg-slate-800/60 transition-colors">
+                        <td className="py-2.5 px-3 whitespace-nowrap font-medium text-slate-300">
                           {formatDate(tx.date)}
                         </td>
-                        <td className="py-2.5 px-3 font-semibold text-slate-900">
+                        <td className="py-2.5 px-3 font-semibold text-white">
                           {srcName}
                         </td>
-                        <td className="py-2.5 px-3 font-semibold text-sky-700">
+                        <td className="py-2.5 px-3 font-semibold text-sky-300">
                           {destName}
                         </td>
-                        <td className="py-2.5 px-3 text-slate-600">
+                        <td className="py-2.5 px-3 text-slate-300">
                           {tx.description}
                         </td>
-                        <td className="py-2.5 px-3 text-right font-sans text-amber-700 font-medium">
+                        <td className="py-2.5 px-3 text-right font-sans text-amber-300 font-medium">
                           {tx.fee ? `BDT ${tx.fee.toFixed(2)}` : '—'}
                         </td>
-                        <td className="py-2.5 px-3 text-right font-bold font-sans text-slate-900">
+                        <td className="py-2.5 px-3 text-right font-bold font-sans text-white">
                           {formatCurrency(tx.amount, userSettings.currencySymbol)}
                         </td>
                       </tr>

@@ -108,7 +108,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
   return (
     <div className="space-y-4">
       {/* Search & Filter Toolbar */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4 shadow-xs space-y-3">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="relative w-full sm:w-80">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -120,7 +120,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-400 rounded-xl text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
             />
           </div>
 
@@ -150,7 +150,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
 
             <button
               onClick={handleExportCsv}
-              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-700"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
@@ -167,16 +167,16 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
         </div>
 
         {/* Filters Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs pt-2 border-t border-slate-100">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs pt-2 border-t border-slate-800">
           <div>
-            <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Ownership</label>
+            <label className="block text-[10px] font-semibold text-slate-300 mb-0.5">Ownership</label>
             <select
               value={selectedOwnership}
               onChange={(e) => {
                 setSelectedOwnership(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 text-white rounded-lg text-xs"
             >
               <option value="all">All Ownerships</option>
               <option value="personal">Personal</option>
@@ -186,14 +186,14 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
           </div>
 
           <div>
-            <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Type</label>
+            <label className="block text-[10px] font-semibold text-slate-300 mb-0.5">Type</label>
             <select
               value={selectedType}
               onChange={(e) => {
                 setSelectedType(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 text-white rounded-lg text-xs"
             >
               <option value="all">All Types</option>
               <option value="salary_income">Income</option>
@@ -217,14 +217,14 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
           </div>
 
           <div>
-            <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Account</label>
+            <label className="block text-[10px] font-semibold text-slate-300 mb-0.5">Account</label>
             <select
               value={selectedAccount}
               onChange={(e) => {
                 setSelectedAccount(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 text-white rounded-lg text-xs"
             >
               <option value="all">All Accounts</option>
               {accounts.map((acc) => (
@@ -236,14 +236,14 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
           </div>
 
           <div>
-            <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Category</label>
+            <label className="block text-[10px] font-semibold text-slate-300 mb-0.5">Category</label>
             <select
               value={selectedCategory}
               onChange={(e) => {
                 setSelectedCategory(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+              className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 text-white rounded-lg text-xs"
             >
               <option value="all">All Categories</option>
               {categories.map((cat) => (
@@ -255,7 +255,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
           </div>
 
           <div>
-            <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">From Date</label>
+            <label className="block text-[10px] font-semibold text-slate-300 mb-0.5">From Date</label>
             <input
               type="date"
               value={startDate}
@@ -263,12 +263,12 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                 setStartDate(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+              className="w-full px-2 py-1 bg-slate-800 border border-slate-700 text-white rounded-lg text-xs"
             />
           </div>
 
           <div>
-            <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">To Date</label>
+            <label className="block text-[10px] font-semibold text-slate-300 mb-0.5">To Date</label>
             <input
               type="date"
               value={endDate}
@@ -276,24 +276,24 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                 setEndDate(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+              className="w-full px-2 py-1 bg-slate-800 border border-slate-700 text-white rounded-lg text-xs"
             />
           </div>
         </div>
       </div>
 
       {/* Ledger Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+              <tr className="bg-slate-800/80 border-b border-slate-700 text-[11px] font-bold text-slate-300 uppercase tracking-wider">
                 <th className="py-3 px-3 w-10 text-center">
                   <input
                     type="checkbox"
                     title="Select/Deselect all pending on this page"
                     onChange={toggleSelectAllPageUnapproved}
-                    className="rounded border-slate-300 text-sky-600 cursor-pointer"
+                    className="rounded border-slate-600 text-sky-500 cursor-pointer"
                   />
                 </th>
                 <th className="py-3 px-3">Date</th>
@@ -307,7 +307,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                 <th className="py-3 px-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
+            <tbody className="divide-y divide-slate-800 text-xs">
               {paginated.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="py-8 text-center text-slate-400 italic">
@@ -329,8 +329,8 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                   return (
                     <tr
                       key={tx.id}
-                      className={`hover:bg-slate-50/80 transition-colors ${
-                        isSelected ? 'bg-sky-50/50' : ''
+                      className={`hover:bg-slate-800/60 transition-colors ${
+                        isSelected ? 'bg-sky-950/50' : ''
                       }`}
                     >
                       <td className="py-3 px-3 text-center">
@@ -339,31 +339,31 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelectTx(tx.id)}
-                            className="rounded border-slate-300 text-sky-600 cursor-pointer"
+                            className="rounded border-slate-600 text-sky-500 cursor-pointer"
                           />
                         ) : (
-                          <span className="text-slate-300 text-[10px]">🔒</span>
+                          <span className="text-slate-400 text-[10px]">🔒</span>
                         )}
                       </td>
 
-                      <td className="py-3 px-3 font-sans text-slate-600 whitespace-nowrap">
+                      <td className="py-3 px-3 font-sans text-slate-300 font-medium whitespace-nowrap">
                         {formatDate(tx.date)}
                       </td>
 
                       <td className="py-3 px-3 whitespace-nowrap">
-                        <span className="font-mono text-[11px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 shadow-2xs">
+                        <span className="font-mono text-[11px] font-bold text-sky-300 bg-sky-950/80 px-2 py-0.5 rounded border border-sky-700 shadow-2xs">
                           {getVoucherNumber(tx, transactions)}
                         </span>
                       </td>
 
                       <td className="py-3 px-3">
-                        <div className="font-semibold text-slate-900">{tx.description}</div>
-                        <div className="text-[10px] text-slate-500">
+                        <div className="font-semibold text-white">{tx.description}</div>
+                        <div className="text-[10px] text-slate-400">
                           {tx.payeePayer} {tx.referenceNumber && `· Ref: ${tx.referenceNumber}`}
                         </div>
                       </td>
 
-                      <td className="py-3 px-3 text-slate-700">
+                      <td className="py-3 px-3 text-slate-300 font-medium">
                         {category?.name || 'Uncategorized'}
                       </td>
 
@@ -371,10 +371,10 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                         <span
                           className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded ${
                             tx.type === 'office_fund_received'
-                              ? 'bg-purple-100 text-purple-800'
+                              ? 'bg-purple-900/80 text-purple-200 border border-purple-700'
                               : isIncome
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-slate-100 text-slate-700'
+                              ? 'bg-emerald-900/80 text-emerald-200 border border-emerald-700'
+                              : 'bg-slate-800 text-slate-200 border border-slate-700'
                           }`}
                         >
                           {formatTransactionType(tx.type).toUpperCase()}
@@ -400,10 +400,10 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                         )}
                       </td>
 
-                      <td className="py-3 px-3 text-slate-300">{account?.name || '-'}</td>
+                      <td className="py-3 px-3 text-slate-300 font-medium">{account?.name || '-'}</td>
 
                       <td className="py-3 px-3 text-right font-sans font-bold whitespace-nowrap">
-                        <span className={isIncome ? 'text-emerald-400' : 'text-slate-200'}>
+                        <span className={isIncome ? 'text-emerald-400' : 'text-rose-400'}>
                           {isIncome ? '+' : '-'}{formatCurrency(tx.amount, userSettings.currencySymbol)}
                         </span>
                       </td>
@@ -436,17 +436,17 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                                 title="Approve this entry with password to update live account balance"
                               >
                                 <ShieldCheck className="w-3.5 h-3.5 text-white" />
-                                <span>Approve (পাসওয়ার্ড দিন)</span>
+                               <span>Approve (পাসওয়ার্ড দিন)</span>
                               </button>
                               <button
                                 onClick={() => onEditTransaction(tx)}
-                                className="px-2 py-1 text-[10px] font-semibold text-sky-600 hover:bg-sky-50 rounded cursor-pointer"
+                                className="px-2 py-1 text-[10px] font-semibold text-sky-400 hover:bg-sky-950/60 rounded cursor-pointer"
                               >
                                 Edit
                               </button>
                               <button
                                 onClick={() => setConfirmTxId(tx.id)}
-                                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer"
+                                className="p-1 text-slate-400 hover:text-rose-400 hover:bg-rose-950/60 rounded cursor-pointer"
                                 title="Reverse Record"
                               >
                                 <RotateCcw className="w-3.5 h-3.5" />
@@ -464,7 +464,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
         </div>
 
         {/* Pagination Footer */}
-        <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-600">
+        <div className="p-3 border-t border-slate-800 bg-slate-900/90 flex items-center justify-between text-xs text-slate-300">
           <span>
             Showing {filtered.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{' '}
             {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length} entries
@@ -474,7 +474,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="px-2.5 py-1 bg-white border border-slate-200 rounded-md font-medium disabled:opacity-40 cursor-pointer"
+              className="px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-200 rounded-md font-medium disabled:opacity-40 cursor-pointer hover:bg-slate-700"
             >
               Previous
             </button>
