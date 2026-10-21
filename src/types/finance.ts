@@ -279,6 +279,7 @@ export interface FilterOptions {
   minAmount?: number;
   maxAmount?: number;
   searchQuery?: string;
+  includeUnapproved?: boolean;
 }
 
 export interface FinancialSummary {

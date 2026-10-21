@@ -157,8 +157,8 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
         relatedOfficeFundId: relatedOfficeFundId || undefined,
         familyMember: familyMember || undefined,
         tags: tagsArray,
-        notes: notes || undefined,
         status: editingTransaction?.status || 'completed',
+        isApproved: editingTransaction?.isApproved ?? false,
       },
       submitAction === 'save_and_voucher'
     );

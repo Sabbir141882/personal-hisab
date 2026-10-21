@@ -65,8 +65,11 @@ export const filterTransactions = (
   filters: FilterOptions
 ): Transaction[] => {
   return transactions.filter((tx) => {
-    // Exclude reversed transactions if needed or filter by status
+    // Exclude reversed transactions
     if (tx.status === 'reversed') return false;
+
+    // By default, exclude unapproved transactions from financial calculations unless explicitly requested
+    if (!filters.includeUnapproved && !tx.isApproved) return false;
 
     // Date filtering
     if (filters.startDate && tx.date < filters.startDate) return false;
@@ -143,7 +146,7 @@ export const calculateAccountBalances = (
     balanceMap.set(acc.id, acc.openingBalance || 0);
   });
 
-  const activeTxs = transactions.filter((t) => t.status === 'completed');
+  const activeTxs = transactions.filter((t) => t.status === 'completed' && t.isApproved === true);
 
   // Process in chronological order
   activeTxs.sort((a, b) => a.date.localeCompare(b.date));

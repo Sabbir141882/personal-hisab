@@ -73,6 +73,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
     categoryId: selectedCategory,
     startDate: startDate || undefined,
     endDate: endDate || undefined,
+    includeUnapproved: true,
   };
 
   const filtered = filterTransactions(transactions, filters);
@@ -375,22 +376,22 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
 
                       <td className="py-3 px-3">
                         {tx.isApproved ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded">
-                            <Lock className="w-3 h-3" />
-                            <span>APPROVED & LOCKED</span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-emerald-900/80 text-emerald-300 rounded border border-emerald-700/60">
+                            <Lock className="w-3 h-3 text-emerald-400" />
+                            <span>APPROVED & FINAL</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-900 rounded">
-                            <Unlock className="w-3 h-3" />
-                            <span>PENDING APPROVAL</span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-amber-950/80 text-amber-300 rounded border border-amber-700/60">
+                            <Unlock className="w-3 h-3 text-amber-400" />
+                            <span>UNAPPROVED (ব্যালেন্স আপডেট হবে না)</span>
                           </span>
                         )}
                       </td>
 
-                      <td className="py-3 px-3 text-slate-700">{account?.name || '-'}</td>
+                      <td className="py-3 px-3 text-slate-300">{account?.name || '-'}</td>
 
                       <td className="py-3 px-3 text-right font-sans font-bold whitespace-nowrap">
-                        <span className={isIncome ? 'text-emerald-700' : 'text-slate-900'}>
+                        <span className={isIncome ? 'text-emerald-400' : 'text-slate-200'}>
                           {isIncome ? '+' : '-'}{formatCurrency(tx.amount, userSettings.currencySymbol)}
                         </span>
                       </td>
@@ -400,30 +401,30 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                           {onViewVoucher && (
                             <button
                               onClick={() => onViewVoucher(tx)}
-                              className="px-2 py-1 text-[10px] font-bold bg-slate-100 text-slate-800 hover:bg-slate-200 rounded border border-slate-300 cursor-pointer flex items-center gap-1 shadow-2xs transition-colors"
+                              className="px-2 py-1 text-[10px] font-bold bg-slate-800 text-slate-200 hover:bg-slate-700 rounded border border-slate-700 cursor-pointer flex items-center gap-1 shadow-2xs transition-colors"
                               title="View & Print Voucher (ভাউচার দেখুন ও প্রিন্ট করুন)"
                             >
-                              <FileText className="w-3 h-3 text-sky-600" />
+                              <FileText className="w-3 h-3 text-sky-400" />
                               <span>Voucher</span>
                             </button>
                           )}
 
                           {tx.isApproved ? (
                             <span
-                              className="text-[10px] text-slate-400 italic font-semibold cursor-not-allowed"
-                              title="Locked with password. Cannot be edited or deleted."
+                              className="text-[10px] text-emerald-400 font-semibold cursor-not-allowed flex items-center gap-1"
+                              title="Approved with password. Locked and finalized."
                             >
-                              🔒 Locked
+                              🔒 Finalized
                             </span>
                           ) : (
                             <>
                               <button
                                 onClick={() => onOpenApproveModal([tx.id])}
-                                className="px-2 py-1 text-[10px] font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded border border-emerald-200 cursor-pointer flex items-center gap-1"
-                                title="Approve this single entry with password"
+                                className="px-2.5 py-1 text-[10px] font-bold bg-emerald-600 text-white hover:bg-emerald-500 rounded border border-emerald-500 cursor-pointer flex items-center gap-1 shadow-xs active:scale-98"
+                                title="Approve this entry with password to update live account balance"
                               >
-                                <ShieldCheck className="w-3 h-3" />
-                                <span>Approve</span>
+                                <ShieldCheck className="w-3.5 h-3.5 text-white" />
+                                <span>Approve (পাসওয়ার্ড দিন)</span>
                               </button>
                               <button
                                 onClick={() => onEditTransaction(tx)}
