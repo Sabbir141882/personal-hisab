@@ -1,6 +1,6 @@
 export type Currency = 'BDT' | 'USD' | 'EUR';
 
-export type AccountType = 'cash' | 'bank' | 'bkash' | 'nagad' | 'rocket' | 'other';
+export type AccountType = 'cash' | 'bank' | 'bkash' | 'nagad' | 'rocket' | 'other' | 'unpass_bill';
 
 export interface Account {
   id: string;
@@ -280,6 +280,7 @@ export interface FilterOptions {
   maxAmount?: number;
   searchQuery?: string;
   includeUnapproved?: boolean;
+  accounts?: Account[];
 }
 
 export interface FinancialSummary {

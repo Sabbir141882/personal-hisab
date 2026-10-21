@@ -57,6 +57,17 @@ export const formatDate = (dateString: string): string => {
   }
 };
 
+export const isUnpassBillAccount = (accountId?: string, accounts: Account[] = []): boolean => {
+  if (!accountId) return false;
+  const acc = accounts.find((a) => a.id === accountId);
+  if (!acc) return false;
+  return acc.type === 'unpass_bill' || acc.name.toLowerCase().includes('unpass');
+};
+
+export const isUnpassBillTx = (tx: Transaction, accounts: Account[] = []): boolean => {
+  return isUnpassBillAccount(tx.sourceAccountId, accounts) || isUnpassBillAccount(tx.destinationAccountId, accounts);
+};
+
 /**
  * Filter transactions based on date, account, category, ownership, search query, etc.
  */
@@ -68,8 +79,12 @@ export const filterTransactions = (
     // Exclude reversed transactions
     if (tx.status === 'reversed') return false;
 
-    // By default, exclude unapproved transactions from financial calculations unless explicitly requested
-    if (!filters.includeUnapproved && !tx.isApproved) return false;
+    // By default, exclude unapproved transactions from financial calculations unless explicitly requested or UNPASS BIL
+    if (!filters.includeUnapproved && !tx.isApproved) {
+      if (!isUnpassBillTx(tx, filters.accounts || [])) {
+        return false;
+      }
+    }
 
     // Date filtering
     if (filters.startDate && tx.date < filters.startDate) return false;
@@ -146,7 +161,10 @@ export const calculateAccountBalances = (
     balanceMap.set(acc.id, acc.openingBalance || 0);
   });
 
-  const activeTxs = transactions.filter((t) => t.status === 'completed' && t.isApproved === true);
+  // Approved transactions OR UNPASS BIL wallet transactions hit live account balance immediately!
+  const activeTxs = transactions.filter(
+    (t) => t.status === 'completed' && (t.isApproved === true || isUnpassBillTx(t, accounts))
+  );
 
   // Process in chronological order
   activeTxs.sort((a, b) => a.date.localeCompare(b.date));

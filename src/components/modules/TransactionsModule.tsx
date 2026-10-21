@@ -23,7 +23,7 @@ import {
   UserSettings,
   formatTransactionType,
 } from '../../types/finance';
-import { filterTransactions, formatCurrency, formatDate } from '../../services/financialEngine';
+import { filterTransactions, formatCurrency, formatDate, isUnpassBillTx } from '../../services/financialEngine';
 import { exportTransactionsToCsv } from '../../services/csvExporter';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 
@@ -379,6 +379,11 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-emerald-900/80 text-emerald-300 rounded border border-emerald-700/60">
                             <Lock className="w-3 h-3 text-emerald-400" />
                             <span>APPROVED & FINAL</span>
+                          </span>
+                        ) : isUnpassBillTx(tx, accounts) ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-amber-900/80 text-amber-200 rounded border border-amber-600/60" title="UNPASS BIL: Balance hits live balance immediately, approve option active">
+                            <Unlock className="w-3 h-3 text-amber-300" />
+                            <span>UNPASS BIL (LIVE BALANCE ACTIVE)</span>
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-amber-950/80 text-amber-300 rounded border border-amber-700/60">

@@ -107,7 +107,8 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
           const isBank = acc.type === 'bank' || acc.name.toLowerCase().includes('bank');
           const isBkash = acc.type === 'bkash' || acc.name.toLowerCase().includes('bkash');
           const isNagad = acc.type === 'nagad' || acc.name.toLowerCase().includes('nagad');
-          const isOther = acc.type === 'other' || acc.type === 'rocket' || acc.name.toLowerCase().includes('rocket') || acc.name.toLowerCase().includes('upay') || acc.name.toLowerCase().includes('other');
+          const isOther = acc.type === 'other' || acc.type === 'rocket' || acc.name.toLowerCase().includes('rocket') || acc.name.toLowerCase().includes('upay') || acc.name.toLowerCase().includes('others') || acc.name.toLowerCase().includes('other');
+          const isUnpass = acc.type === 'unpass_bill' || acc.name.toLowerCase().includes('unpass');
           const isCash = acc.type === 'cash' || acc.name.toLowerCase().includes('cash');
 
           let cardBg = 'bg-slate-900 border-slate-800';
@@ -126,18 +127,25 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
             if (!acc.isOfficeAccount) badgeBg = 'bg-[#E2136E] text-white font-bold';
           } else if (isNagad) {
             brandTag = 'Nagad';
+            cardBg = 'bg-red-950/40 border-red-700/60 hover:border-red-500/80';
+            iconBg = 'bg-[#E03823] text-white font-bold';
+            titleColor = 'text-red-300';
+            balanceColor = 'text-red-400 font-bold';
+            if (!acc.isOfficeAccount) badgeBg = 'bg-[#E03823] text-white font-bold';
+          } else if (isOther) {
+            brandTag = 'Others Wallet';
             cardBg = 'bg-orange-950/40 border-orange-700/60 hover:border-orange-500/80';
-            iconBg = 'bg-[#F7921E] text-white font-bold';
+            iconBg = 'bg-[#F97316] text-white font-bold';
             titleColor = 'text-orange-300';
             balanceColor = 'text-orange-400 font-bold';
-            if (!acc.isOfficeAccount) badgeBg = 'bg-[#F7921E] text-white font-bold';
-          } else if (isOther) {
-            brandTag = 'Other Wallet';
-            cardBg = 'bg-amber-950/40 border-amber-700/60 hover:border-amber-500/80';
-            iconBg = 'bg-[#F97316] text-white font-bold';
+            if (!acc.isOfficeAccount) badgeBg = 'bg-[#F97316] text-white font-bold';
+          } else if (isUnpass) {
+            brandTag = 'UNPASS BIL Wallet';
+            cardBg = 'bg-amber-950/40 border-amber-600/60 hover:border-amber-400/80';
+            iconBg = 'bg-[#F59E0B] text-slate-950 font-bold';
             titleColor = 'text-amber-300';
             balanceColor = 'text-amber-400 font-bold';
-            if (!acc.isOfficeAccount) badgeBg = 'bg-[#F97316] text-white font-bold';
+            if (!acc.isOfficeAccount) badgeBg = 'bg-[#F59E0B] text-slate-950 font-bold';
           } else if (isBank) {
             brandTag = 'Bank Account';
             cardBg = 'bg-indigo-950/40 border-indigo-700/60 hover:border-indigo-500/80';
@@ -309,8 +317,8 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
                 <option value="cash">Cash in Hand</option>
                 <option value="bkash">bKash Mobile Wallet</option>
                 <option value="nagad">Nagad Mobile Wallet</option>
-                <option value="rocket">Rocket Mobile Wallet</option>
-                <option value="other">Other Account</option>
+                <option value="other">Others Mobile Wallet (Orange)</option>
+                <option value="unpass_bill">UNPASS BIL Wallet (Instant Live Balance)</option>
               </select>
             </div>
 

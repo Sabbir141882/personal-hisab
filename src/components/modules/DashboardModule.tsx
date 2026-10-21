@@ -36,7 +36,7 @@ import {
   Transaction,
   UserSettings,
 } from '../../types/finance';
-import { formatCurrency, formatDate } from '../../services/financialEngine';
+import { formatCurrency, formatDate, isUnpassBillTx } from '../../services/financialEngine';
 
 interface DashboardModuleProps {
   summary: FinancialSummary;
@@ -111,6 +111,7 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
 
     return transactions.filter((t) => {
       if (t.status !== 'completed') return false;
+      if (!t.isApproved && !isUnpassBillTx(t, accounts)) return false;
 
       if (selectedFilter === 'this_month') {
         return t.date.startsWith(currentMonthStr);
