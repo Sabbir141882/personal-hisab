@@ -196,77 +196,58 @@ export const calculateAccountBalances = (
     balanceMap.set(acc.id, acc.openingBalance || 0);
   });
 
-  // Approved transactions OR UNPASS BIL wallet transactions hit live account balance immediately!
+  // Approved transactions OR UNPASS BIL transactions hit live account balance immediately!
   const activeTxs = transactions.filter(
     (t) => t.status === 'completed' && (t.isApproved === true || isUnpassBillTx(t, accounts))
   );
 
   // Process in chronological order
-  activeTxs.sort((a, b) => a.date.localeCompare(b.date));
+  activeTxs.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
   activeTxs.forEach((tx) => {
-    const amount = tx.amount;
-    const fee = tx.fee || 0;
+    const amount = Number(tx.amount) || 0;
+    const fee = Number(tx.fee) || 0;
+    const typeStr = (tx.type || '').toLowerCase();
 
-    switch (tx.type) {
-      case 'income':
-      case 'personal_income':
-      case 'salary_income':
-      case 'additional_income':
-      case 'office_fund_received':
-      case 'office_money_received':
-      case 'loan_received':
-      case 'receivable_collection':
-      case 'money_received':
-      case 'refund':
-      case 'reimbursement': {
-        const current = balanceMap.get(tx.sourceAccountId) || 0;
-        balanceMap.set(tx.sourceAccountId, current + amount - fee);
-        break;
+    // Determine transaction category
+    const isIncome =
+      typeStr.includes('income') ||
+      typeStr.includes('received') ||
+      typeStr.includes('collection') ||
+      typeStr.includes('refund') ||
+      typeStr.includes('reimbursement');
+
+    const isTransfer =
+      typeStr === 'account_transfer' ||
+      typeStr === 'money_transfer' ||
+      typeStr === 'savings_contribution' ||
+      typeStr === 'savings' ||
+      typeStr === 'investment' ||
+      typeStr === 'savings_withdrawal';
+
+    const isAdjustment = typeStr === 'opening_balance_adjustment';
+
+    if (isAdjustment) {
+      // Set or adjust balance directly
+      balanceMap.set(tx.sourceAccountId, amount);
+    } else if (isTransfer) {
+      // Decrease source account
+      const srcCurrent = balanceMap.get(tx.sourceAccountId) || 0;
+      balanceMap.set(tx.sourceAccountId, srcCurrent - amount - fee);
+
+      // Increase destination account if specified
+      if (tx.destinationAccountId) {
+        const destCurrent = balanceMap.get(tx.destinationAccountId) || 0;
+        balanceMap.set(tx.destinationAccountId, destCurrent + amount);
       }
-
-      case 'office_expense':
-      case 'personal_expense':
-      case 'family_expense':
-      case 'baby_expense':
-      case 'mobile_expense':
-      case 'other_expense':
-      case 'personal_expense_via_office':
-      case 'loan_issued':
-      case 'loan_given':
-      case 'money_given':
-      case 'debt_repayment':
-      case 'loan_repayment':
-      case 'office_fund_returned':
-      case 'office_money_returned': {
-        const current = balanceMap.get(tx.sourceAccountId) || 0;
-        balanceMap.set(tx.sourceAccountId, current - amount - fee);
-        break;
-      }
-
-      case 'account_transfer':
-      case 'money_transfer':
-      case 'savings_contribution':
-      case 'savings':
-      case 'investment':
-      case 'savings_withdrawal': {
-        // Decrease source
-        const srcCurrent = balanceMap.get(tx.sourceAccountId) || 0;
-        balanceMap.set(tx.sourceAccountId, srcCurrent - amount - fee);
-
-        // Increase destination if specified
-        if (tx.destinationAccountId) {
-          const destCurrent = balanceMap.get(tx.destinationAccountId) || 0;
-          balanceMap.set(tx.destinationAccountId, destCurrent + amount);
-        }
-        break;
-      }
-
-      case 'opening_balance_adjustment': {
-        // Direct setting or adjustment
-        balanceMap.set(tx.sourceAccountId, amount);
-        break;
-      }
+    } else if (isIncome) {
+      // Income increases source account
+      const current = balanceMap.get(tx.sourceAccountId) || 0;
+      balanceMap.set(tx.sourceAccountId, current + amount - fee);
+    } else {
+      // Expenses (personal, family, baby, mobile, office, unpass_bill, etc.) decrease source account
+      const current = balanceMap.get(tx.sourceAccountId) || 0;
+      balanceMap.set(tx.sourceAccountId, current - amount - fee);
     }
   });
 
@@ -308,51 +289,40 @@ export const calculateFinancialSummary = (
   let totalReceivablesCollected = 0;
 
   filteredTxs.forEach((tx) => {
-    switch (tx.type) {
-      case 'income':
-      case 'salary_income':
-      case 'personal_income':
-      case 'additional_income':
-        totalOtherPersonalIncome += tx.amount;
-        break;
-      case 'office_fund_received':
-      case 'office_money_received':
-        totalOfficeFundsReceived += tx.amount;
-        break;
+    const typeStr = (tx.type || '').toLowerCase();
+    const amt = Number(tx.amount) || 0;
 
-      case 'office_expense':
-        totalOfficeExpenses += tx.amount;
-        break;
-      case 'personal_expense':
-      case 'mobile_expense':
-      case 'other_expense':
-        totalPersonalExpenses += tx.amount;
-        break;
-      case 'family_expense':
-      case 'baby_expense':
-        totalFamilyExpenses += tx.amount;
-        break;
-      case 'personal_expense_via_office':
-        totalPersonalExpensesViaOffice += tx.amount;
-        // Personal spending using office funds is personal expense!
-        totalPersonalExpenses += tx.amount;
-        break;
-
-      case 'savings_contribution':
-      case 'savings':
-      case 'investment':
-        totalSavingsContributions += tx.amount;
-        break;
-      case 'debt_repayment':
-      case 'loan_repayment':
-        totalDebtRepayments += tx.amount;
-        break;
-      case 'receivable_collection':
-      case 'money_received':
-        totalReceivablesCollected += tx.amount;
-        break;
-      default:
-        break;
+    if (typeStr === 'salary_income') {
+      totalSalaryIncome += amt;
+    } else if (typeStr === 'additional_income') {
+      totalAdditionalIncome += amt;
+    } else if (typeStr.includes('income') || typeStr === 'receivable_collection' || typeStr === 'money_received') {
+      totalOtherPersonalIncome += amt;
+    } else if (typeStr === 'office_fund_received' || typeStr === 'office_money_received') {
+      totalOfficeFundsReceived += amt;
+    } else if (typeStr === 'office_expense') {
+      totalOfficeExpenses += amt;
+    } else if (typeStr === 'family_expense' || typeStr === 'baby_expense') {
+      totalFamilyExpenses += amt;
+    } else if (typeStr === 'personal_expense_via_office') {
+      totalPersonalExpensesViaOffice += amt;
+      totalPersonalExpenses += amt;
+    } else if (typeStr === 'savings_contribution' || typeStr === 'savings' || typeStr === 'investment') {
+      totalSavingsContributions += amt;
+    } else if (typeStr === 'debt_repayment' || typeStr === 'loan_repayment') {
+      totalDebtRepayments += amt;
+    } else if (typeStr === 'receivable_collection' || typeStr === 'money_received') {
+      totalReceivablesCollected += amt;
+    } else if (
+      typeStr.includes('expense') ||
+      typeStr === 'unpass_bill' ||
+      typeStr === 'loan_issued' ||
+      typeStr === 'loan_given' ||
+      typeStr === 'money_given'
+    ) {
+      totalPersonalExpenses += amt;
+    } else {
+      totalOtherExpenses += amt;
     }
   });
 

@@ -152,20 +152,21 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
   let totalExpense = 0;
 
   completedTxs.forEach((t) => {
+    const typeStr = (t.type || '').toLowerCase();
     const isIncome =
-      t.type === 'personal_income' ||
-      t.type === 'salary_income' ||
-      t.type === 'additional_income' ||
-      t.type === 'income' ||
-      t.type === 'office_fund_received' ||
-      t.type === 'money_received';
+      typeStr.includes('income') ||
+      typeStr.includes('received') ||
+      typeStr.includes('collection') ||
+      typeStr.includes('refund');
 
     const isExpense =
-      t.type === 'personal_expense' ||
-      t.type === 'family_expense' ||
-      t.type === 'office_expense' ||
-      t.type === 'personal_expense_via_office' ||
-      t.type === 'other_expense';
+      typeStr.includes('expense') ||
+      typeStr === 'unpass_bill' ||
+      typeStr.includes('loan_issued') ||
+      typeStr.includes('loan_given') ||
+      typeStr.includes('money_given') ||
+      typeStr.includes('repayment') ||
+      typeStr.includes('returned');
 
     if (isIncome) totalIncome += t.amount;
     if (isExpense) totalExpense += t.amount;
@@ -194,10 +195,18 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
   const defaultColors = ['#3B82F6', '#F97316', '#EC4899', '#8B5CF6', '#06B6D4', '#10B981', '#EAB308', '#64748B'];
 
   completedTxs.forEach((tx) => {
-    const isExpense = tx.type.includes('expense') || tx.type === 'office_expense' || tx.type === 'other_expense';
+    const typeStr = (tx.type || '').toLowerCase();
+    const isExpense =
+      typeStr.includes('expense') ||
+      typeStr === 'unpass_bill' ||
+      typeStr.includes('loan_issued') ||
+      typeStr.includes('loan_given') ||
+      typeStr.includes('money_given') ||
+      typeStr.includes('repayment') ||
+      typeStr.includes('returned');
     if (isExpense) {
       const cat = categories.find((c) => c.id === tx.categoryId);
-      const catName = cat ? cat.name : 'Other Expense';
+      const catName = cat ? cat.name : 'UNPASS / Other Expense';
       if (!categoryExpensesMap[catName]) {
         const colorIdx = Object.keys(categoryExpensesMap).length % defaultColors.length;
         categoryExpensesMap[catName] = { name: catName, amount: 0, color: cat?.color || defaultColors[colorIdx] };
@@ -266,8 +275,20 @@ export const DashboardModule: React.FC<DashboardModuleProps> = ({
 
       completedTxs.forEach((tx) => {
         if (tx.date && tx.date.startsWith(m.key)) {
-          const isInc = tx.type.includes('income') || tx.type === 'office_fund_received' || tx.type === 'money_received';
-          const isExp = tx.type.includes('expense') || tx.type === 'office_expense' || tx.type === 'other_expense';
+          const typeStr = (tx.type || '').toLowerCase();
+          const isInc =
+            typeStr.includes('income') ||
+            typeStr.includes('received') ||
+            typeStr.includes('collection') ||
+            typeStr.includes('refund');
+          const isExp =
+            typeStr.includes('expense') ||
+            typeStr === 'unpass_bill' ||
+            typeStr.includes('loan_issued') ||
+            typeStr.includes('loan_given') ||
+            typeStr.includes('money_given') ||
+            typeStr.includes('repayment') ||
+            typeStr.includes('returned');
           if (isInc) monthIncome += tx.amount;
           if (isExp) monthExpense += tx.amount;
         }
