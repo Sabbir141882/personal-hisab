@@ -57,6 +57,33 @@ export const formatDate = (dateString: string): string => {
   }
 };
 
+/**
+ * Calculates sequential serial voucher number V.NO-0001, V.NO-0002, etc. based on chronological transaction order
+ */
+export const getVoucherNumber = (tx: Transaction, allTransactions: Transaction[] = []): string => {
+  if (!tx) return 'V.NO-0001';
+
+  if (allTransactions && allTransactions.length > 0) {
+    const sorted = [...allTransactions].sort((a, b) => {
+      const dateCmp = (a.date || '').localeCompare(b.date || '');
+      if (dateCmp !== 0) return dateCmp;
+      const createdCmp = (a.createdAt || '').localeCompare(b.createdAt || '');
+      if (createdCmp !== 0) return createdCmp;
+      return (a.id || '').localeCompare(b.id || '');
+    });
+
+    const index = sorted.findIndex((t) => t.id === tx.id);
+    if (index >= 0) {
+      const serialNum = index + 1;
+      return `V.NO-${String(serialNum).padStart(4, '0')}`;
+    }
+  }
+
+  const digits = (tx.referenceNumber || tx.id || '').replace(/\D/g, '');
+  const num = digits ? parseInt(digits.slice(-4), 10) || 1 : 1;
+  return `V.NO-${String(num).padStart(4, '0')}`;
+};
+
 export const isUnpassBillAccount = (accountId?: string, accounts: Account[] = []): boolean => {
   if (!accountId) return false;
   if (accountId === 'acc_unpass_1' || accountId.toLowerCase().includes('unpass')) return true;

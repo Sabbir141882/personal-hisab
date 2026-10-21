@@ -107,7 +107,7 @@ export function App() {
 
   // Handlers for viewing vouchers
   const handleViewTransactionVoucher = (tx: Transaction) => {
-    const v = createVoucherFromTransaction(tx, calculatedAccounts, categories);
+    const v = createVoucherFromTransaction(tx, calculatedAccounts, categories, transactions);
     setActiveVoucher(v);
     setIsVoucherModalOpen(true);
   };

@@ -8,7 +8,7 @@ import {
   X,
 } from 'lucide-react';
 import { Account, Category, DebtReceivable, Transaction, UserSettings } from '../../types/finance';
-import { formatDate } from '../../services/financialEngine';
+import { formatDate, getVoucherNumber } from '../../services/financialEngine';
 
 export interface VoucherData {
   voucherNo: string;
@@ -65,7 +65,8 @@ export function amountToWords(amount: number): string {
 export function createVoucherFromTransaction(
   tx: Transaction,
   accounts: Account[],
-  categories: Category[]
+  categories: Category[],
+  allTransactions?: Transaction[]
 ): VoucherData {
   const cat = categories.find((c) => c.id === tx.categoryId);
   const sub = cat?.subcategories?.find((s) => s.id === tx.subcategoryId);
@@ -91,9 +92,7 @@ export function createVoucherFromTransaction(
     vType = 'loan_received';
   }
 
-  const vNo = tx.referenceNumber
-    ? `VCH-${tx.referenceNumber}`
-    : `VCH-${tx.id.replace('tx_', '').toUpperCase().slice(0, 10)}`;
+  const vNo = getVoucherNumber(tx, allTransactions || []);
 
   return {
     voucherNo: vNo,

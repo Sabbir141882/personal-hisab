@@ -23,7 +23,7 @@ import {
   UserSettings,
   formatTransactionType,
 } from '../../types/finance';
-import { filterTransactions, formatCurrency, formatDate, isUnpassBillTx } from '../../services/financialEngine';
+import { filterTransactions, formatCurrency, formatDate, getVoucherNumber, isUnpassBillTx } from '../../services/financialEngine';
 import { exportTransactionsToCsv } from '../../services/csvExporter';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 
@@ -297,6 +297,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
                   />
                 </th>
                 <th className="py-3 px-3">Date</th>
+                <th className="py-3 px-3">V.No</th>
                 <th className="py-3 px-3">Description & Payee</th>
                 <th className="py-3 px-3">Category</th>
                 <th className="py-3 px-3">Type</th>
@@ -309,7 +310,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
             <tbody className="divide-y divide-slate-100 text-xs">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-slate-400 italic">
+                  <td colSpan={10} className="py-8 text-center text-slate-400 italic">
                     No transactions found matching your selected filters.
                   </td>
                 </tr>
@@ -347,6 +348,12 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
 
                       <td className="py-3 px-3 font-sans text-slate-600 whitespace-nowrap">
                         {formatDate(tx.date)}
+                      </td>
+
+                      <td className="py-3 px-3 whitespace-nowrap">
+                        <span className="font-mono text-[11px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 shadow-2xs">
+                          {getVoucherNumber(tx, transactions)}
+                        </span>
                       </td>
 
                       <td className="py-3 px-3">
