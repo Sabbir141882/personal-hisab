@@ -168,14 +168,25 @@ export const filterTransactions = (
     if (filters.minAmount !== undefined && tx.amount < filters.minAmount) return false;
     if (filters.maxAmount !== undefined && tx.amount > filters.maxAmount) return false;
 
-    // Search Query
+    // Search Query (Supports Description, Payee, Ref#, Tags, and Voucher Numbers like V.NO-0001)
     if (filters.searchQuery && filters.searchQuery.trim() !== '') {
-      const q = filters.searchQuery.toLowerCase();
-      const matchDesc = tx.description.toLowerCase().includes(q);
-      const matchPayee = tx.payeePayer.toLowerCase().includes(q);
+      const q = filters.searchQuery.toLowerCase().trim();
+      const matchDesc = (tx.description || '').toLowerCase().includes(q);
+      const matchPayee = (tx.payeePayer || '').toLowerCase().includes(q);
       const matchRef = (tx.referenceNumber || '').toLowerCase().includes(q);
-      const matchTag = tx.tags.some((t) => t.toLowerCase().includes(q));
-      if (!matchDesc && !matchPayee && !matchRef && !matchTag) return false;
+      const matchTag = tx.tags ? tx.tags.some((t) => t.toLowerCase().includes(q)) : false;
+
+      // Calculate voucher number for this transaction (e.g., V.NO-0001)
+      const vNum = getVoucherNumber(tx, transactions).toLowerCase();
+      const vNumClean = vNum.replace(/[^a-z0-9]/g, '');
+      const qClean = q.replace(/[^a-z0-9]/g, '');
+
+      const matchVoucherDirect = vNum.includes(q);
+      const matchVoucherClean = qClean.length > 0 && vNumClean.includes(qClean);
+
+      if (!matchDesc && !matchPayee && !matchRef && !matchTag && !matchVoucherDirect && !matchVoucherClean) {
+        return false;
+      }
     }
 
     return true;

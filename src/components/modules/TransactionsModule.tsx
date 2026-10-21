@@ -114,7 +114,7 @@ export const TransactionsModule: React.FC<TransactionsModuleProps> = ({
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
-              placeholder="Search description, payee, ref #, tags..."
+              placeholder="Search V.NO-0001, description, payee, ref #, tags..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
