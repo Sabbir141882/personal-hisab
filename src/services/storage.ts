@@ -99,7 +99,22 @@ export const saveSettings = (settings: UserSettings): void =>
 
 export const loadAccounts = (): Account[] => {
   const accounts = getStorageItem<Account[]>(STORAGE_KEYS.ACCOUNTS, INITIAL_ACCOUNTS);
-  return accounts.map((acc) => ({
+  const merged = [...accounts];
+  let modified = false;
+
+  for (const initAcc of INITIAL_ACCOUNTS) {
+    const exists = merged.some((a) => a.id === initAcc.id || a.name.toLowerCase() === initAcc.name.toLowerCase());
+    if (!exists) {
+      merged.push(initAcc);
+      modified = true;
+    }
+  }
+
+  if (modified) {
+    setStorageItem(STORAGE_KEYS.ACCOUNTS, merged);
+  }
+
+  return merged.map((acc) => ({
     ...acc,
     currency: 'BDT',
   }));

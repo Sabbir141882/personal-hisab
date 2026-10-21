@@ -59,13 +59,13 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-sky-600" />
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <Wallet className="w-5 h-5 text-sky-400" />
             <span>Accounts, Banks & Mobile Wallets</span>
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-400 mt-1">
             Manage cash in hand, bank accounts, bKash, Nagad, and mobile wallets with audit trail
           </p>
         </div>
@@ -73,14 +73,14 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenTransferModal}
-            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-700"
           >
             <ArrowLeftRight className="w-3.5 h-3.5" />
             <span>Transfer Funds</span>
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+            className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-98"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Add New Account</span>
@@ -89,14 +89,14 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
       </div>
 
       {/* Total Liquidity Card */}
-      <div className="p-4 rounded-xl border border-sky-200 bg-sky-50/40 flex items-center justify-between">
+      <div className="p-4 rounded-xl border border-sky-800/60 bg-sky-950/40 flex items-center justify-between">
         <div>
-          <span className="text-xs font-semibold text-sky-800">Total Active Cash & Bank Balances</span>
-          <p className="text-2xl font-bold font-sans text-sky-950 mt-0.5">
+          <span className="text-xs font-semibold text-sky-300">Total Active Cash, Bank & Wallet Balances</span>
+          <p className="text-2xl font-bold font-sans text-sky-200 mt-0.5">
             {formatCurrency(totalBalance, userSettings.currencySymbol)}
           </p>
         </div>
-        <span className="text-xs font-semibold text-sky-700 bg-white px-3 py-1 rounded-lg border border-sky-200">
+        <span className="text-xs font-semibold text-sky-300 bg-sky-900/60 px-3 py-1 rounded-lg border border-sky-700/60">
           {accounts.length} Wallets Active
         </span>
       </div>
@@ -106,63 +106,85 @@ export const AccountsModule: React.FC<AccountsModuleProps> = ({
         {accounts.map((acc) => {
           const isBank = acc.type === 'bank' || acc.name.toLowerCase().includes('bank');
           const isBkash = acc.type === 'bkash' || acc.name.toLowerCase().includes('bkash');
+          const isNagad = acc.type === 'nagad' || acc.name.toLowerCase().includes('nagad');
+          const isOther = acc.type === 'other' || acc.type === 'rocket' || acc.name.toLowerCase().includes('rocket') || acc.name.toLowerCase().includes('upay') || acc.name.toLowerCase().includes('other');
           const isCash = acc.type === 'cash' || acc.name.toLowerCase().includes('cash');
 
-          let cardBg = 'bg-white border-slate-200';
-          let iconBg = 'bg-slate-100 text-slate-700';
-          let titleColor = 'text-slate-900';
-          let balanceColor = 'text-slate-900';
-          let badgeBg = acc.isOfficeAccount ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700';
+          let cardBg = 'bg-slate-900 border-slate-800';
+          let iconBg = 'bg-slate-800 text-slate-300';
+          let titleColor = 'text-white';
+          let balanceColor = 'text-white';
+          let badgeBg = acc.isOfficeAccount ? 'bg-purple-900/80 text-purple-300 border border-purple-700' : 'bg-slate-800 text-slate-300';
+          let brandTag = acc.type.toUpperCase();
 
-          if (isBank) {
-            cardBg = 'bg-emerald-50/80 border-emerald-200 hover:border-emerald-300';
-            iconBg = 'bg-emerald-100 text-emerald-800';
-            titleColor = 'text-emerald-950';
-            balanceColor = 'text-emerald-900';
-            if (!acc.isOfficeAccount) badgeBg = 'bg-emerald-600 text-white font-bold';
-          } else if (isBkash) {
-            cardBg = 'bg-pink-50/80 border-pink-200 hover:border-pink-300';
-            iconBg = 'bg-[#E2136E]/10 text-[#E2136E]';
-            titleColor = 'text-[#9E0B46]';
-            balanceColor = 'text-[#D12053]';
+          if (isBkash) {
+            brandTag = 'bKash';
+            cardBg = 'bg-pink-950/40 border-pink-700/60 hover:border-pink-500/80';
+            iconBg = 'bg-[#E2136E] text-white font-bold';
+            titleColor = 'text-pink-300';
+            balanceColor = 'text-pink-400 font-bold';
             if (!acc.isOfficeAccount) badgeBg = 'bg-[#E2136E] text-white font-bold';
+          } else if (isNagad) {
+            brandTag = 'Nagad';
+            cardBg = 'bg-orange-950/40 border-orange-700/60 hover:border-orange-500/80';
+            iconBg = 'bg-[#F7921E] text-white font-bold';
+            titleColor = 'text-orange-300';
+            balanceColor = 'text-orange-400 font-bold';
+            if (!acc.isOfficeAccount) badgeBg = 'bg-[#F7921E] text-white font-bold';
+          } else if (isOther) {
+            brandTag = 'Other Wallet';
+            cardBg = 'bg-amber-950/40 border-amber-700/60 hover:border-amber-500/80';
+            iconBg = 'bg-[#F97316] text-white font-bold';
+            titleColor = 'text-amber-300';
+            balanceColor = 'text-amber-400 font-bold';
+            if (!acc.isOfficeAccount) badgeBg = 'bg-[#F97316] text-white font-bold';
+          } else if (isBank) {
+            brandTag = 'Bank Account';
+            cardBg = 'bg-indigo-950/40 border-indigo-700/60 hover:border-indigo-500/80';
+            iconBg = 'bg-indigo-600 text-white font-bold';
+            titleColor = 'text-indigo-300';
+            balanceColor = 'text-indigo-400 font-bold';
+            if (!acc.isOfficeAccount) badgeBg = 'bg-indigo-600 text-white font-bold';
           } else if (isCash) {
-            cardBg = 'bg-amber-50/80 border-amber-200 hover:border-amber-300';
-            iconBg = 'bg-amber-100 text-amber-800';
-            titleColor = 'text-amber-950';
-            balanceColor = 'text-amber-900';
-            if (!acc.isOfficeAccount) badgeBg = 'bg-amber-600 text-white font-bold';
+            brandTag = 'Physical Cash';
+            cardBg = 'bg-emerald-950/40 border-emerald-700/60 hover:border-emerald-500/80';
+            iconBg = 'bg-emerald-600 text-white font-bold';
+            titleColor = 'text-emerald-300';
+            balanceColor = 'text-emerald-400 font-bold';
+            if (!acc.isOfficeAccount) badgeBg = 'bg-emerald-600 text-white font-bold';
           }
 
           return (
             <div key={acc.id} className={`rounded-2xl border p-5 shadow-xs space-y-3 transition-all ${cardBg}`}>
               <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className={`p-2 rounded-xl ${iconBg}`}>
+                <div className="flex items-center gap-2.5">
+                  <div className={`p-2.5 rounded-xl shadow-xs shrink-0 ${iconBg}`}>
                     {isCash ? <Wallet className="w-4 h-4" /> : <CreditCard className="w-4 h-4" />}
                   </div>
                   <div>
                     <h3 className={`font-bold text-sm ${titleColor}`}>{acc.name}</h3>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">
-                      {acc.type} {acc.accountNumber && `· ${acc.accountNumber}`}
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">
+                      {brandTag} {acc.accountNumber && `· ${acc.accountNumber}`}
                     </p>
                   </div>
                 </div>
-                <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${badgeBg}`}>
-                  {acc.isOfficeAccount ? 'OFFICE WALLET' : 'PERSONAL'}
+                <span className={`text-[9px] font-bold px-2 py-0.5 rounded shadow-2xs ${badgeBg}`}>
+                  {acc.isOfficeAccount ? 'OFFICE WALLET' : brandTag}
                 </span>
               </div>
 
-              <div className="py-2 border-y border-slate-200/60">
-                <span className="text-[10px] text-slate-500 uppercase font-semibold">Current Balance</span>
+              <div className="py-2.5 border-y border-slate-800/80">
+                <span className="text-[10px] text-slate-400 uppercase font-semibold">Current Balance</span>
                 <p className={`text-xl font-bold font-sans tracking-tight tabular-nums mt-0.5 ${balanceColor}`}>
                   {formatCurrency(acc.currentBalance, userSettings.currencySymbol)}
                 </p>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
+              <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
                 <span>Opening: BDT {acc.openingBalance.toLocaleString()}</span>
-                <span className="text-[11px] font-medium text-slate-400">Ledger Verified</span>
+                <span className="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
+                  <span>✓</span> Ledger Verified
+                </span>
               </div>
             </div>
           );
